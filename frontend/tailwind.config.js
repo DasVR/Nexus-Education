@@ -7,10 +7,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        slate: {
-          950: '#09090b',
-        },
         zinc: {
+          800: '#27272a',
+          900: '#18181b',
           950: '#09090b',
         },
         emerald: {
@@ -21,20 +20,11 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['JetBrains Mono', 'ui-monospace', 'monospace'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       transitionTimingFunction: {
         'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
-      },
-      backgroundImage: {
-        'grid-white': 'linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px)',
-      },
-      backgroundSize: {
-        'grid': '24px 24px',
-      },
-      boxShadow: {
-        'glow-emerald': '0 0 20px rgba(16, 185, 129, 0.35)',
       },
     },
   },

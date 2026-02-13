@@ -39,7 +39,8 @@ jobs:
         env:
           # Required for GitHub Pages: base path is /<repo-name>/
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
-          # Set repository secrets for production:
+          # Pass repository secrets so the frontend build (Vite) can inject them at build time.
+          # Add these under Settings → Secrets and variables → Actions:
           VITE_WORKER_URL: ${{ secrets.VITE_WORKER_URL }}
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
 

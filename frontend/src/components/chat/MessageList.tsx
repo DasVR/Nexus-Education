@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { MessageBubble } from './MessageBubble'
+import { ThinkingBlock } from './ThinkingBlock'
 import { BlurToLearn } from './BlurToLearn'
+import type { AppMode } from '../../store/useNexusStore'
 
 export type Message = {
   id: string
@@ -8,13 +10,15 @@ export type Message = {
   content: string
   isStreaming?: boolean
   isSpoiler?: boolean
+  reasoning?: string
 }
 
 type MessageListProps = {
   messages: Message[]
+  mode?: AppMode
 }
 
-export function MessageList({ messages }: MessageListProps) {
+export function MessageList({ messages, mode }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -28,11 +32,22 @@ export function MessageList({ messages }: MessageListProps) {
           {msg.role === 'assistant' && msg.isSpoiler ? (
             <BlurToLearn content={msg.content} />
           ) : (
-            <MessageBubble
-              role={msg.role}
-              content={msg.content}
-              isStreaming={msg.isStreaming}
-            />
+            <>
+              {msg.role === 'assistant' && (msg.reasoning != null || msg.isStreaming) && (
+                <div className="mb-2">
+                  <ThinkingBlock
+                    reasoning={msg.reasoning}
+                    isStreaming={msg.isStreaming && !msg.reasoning}
+                  />
+                </div>
+              )}
+              <MessageBubble
+                role={msg.role}
+                content={msg.content}
+                isStreaming={msg.isStreaming}
+                showDiffOption={mode === 'writing'}
+              />
+            </>
           )}
         </div>
       ))}

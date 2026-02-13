@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react'
-import { CostCockpit, estimateTokens, COST_LOW_THRESHOLD } from './CostCockpit'
+import { useState, useCallback, useRef } from 'react'
+import { CommandDeck } from './CommandDeck'
 import { MessageList, type Message } from './MessageList'
 import { CitationDrawer } from './CitationDrawer'
 import { useStreamingResponse } from '../../hooks/useStreamingResponse'
 import { useCredits } from '../../hooks/useCredits'
+import { useNexusStore } from '../../store/useNexusStore'
 import { SYSTEM_PROMPTS } from '../../lib/prompts'
 
 type Mode = 'tutor' | 'research' | 'writing'
@@ -19,18 +20,17 @@ export function ChatInterface() {
     url?: string
     snippet?: string
   } | null>(null)
+  const setAttachedFileName = useNexusStore((s) => s.setAttachedFileName)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const token = null
   const { credits, refetch: refetchCredits } = useCredits(token)
   const { send: sendStream, error: streamError, isLoading, setError } =
     useStreamingResponse(token)
 
-  const costTier =
-    estimateTokens(input) <= COST_LOW_THRESHOLD ? 'low' : 'high'
-
-  const walletLabel = credits
-    ? `$${((credits.limitCents - credits.usedCents) / 100).toFixed(2)} left`
-    : undefined
+  const creditsDisplay = credits
+    ? Math.max(0, credits.limitCents - credits.usedCents)
+    : 0
 
   const handleSend = useCallback(() => {
     const text = input.trim()
@@ -120,27 +120,38 @@ export function ChatInterface() {
       </div>
 
       {streamError && (
-        <div className="mx-4 mt-2 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
+        <div className="mx-4 mt-2 px-4 py-2 border border-amber-500/20 bg-amber-500/10 text-amber-400 text-sm font-mono flex items-center justify-between">
           {streamError}
           <button
             type="button"
             onClick={() => setError(null)}
-            className="ml-2 underline"
+            className="underline"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      <MessageList messages={messages} />
+      <MessageList messages={messages} mode={mode} />
 
-      <CostCockpit
+      <CommandDeck
         value={input}
         onChange={setInput}
         onSend={handleSend}
         disabled={isLoading}
-        costTier={costTier}
-        walletLabel={walletLabel}
+        creditsDisplay={creditsDisplay}
+        onFileClick={() => fileInputRef.current?.click()}
+      />
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept=".pdf,.txt,.md"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          setAttachedFileName(file ? file.name : null)
+          e.target.value = ''
+        }}
       />
 
       <CitationDrawer

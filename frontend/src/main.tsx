@@ -6,12 +6,12 @@ import './index.css'
 
 const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 if (!publishableKey) {
-  console.warn('Missing VITE_CLERK_PUBLISHABLE_KEY – auth will not work')
+  throw new Error('Missing Clerk Publishable Key. Set VITE_CLERK_PUBLISHABLE_KEY in .env.local or .env')
 }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={publishableKey || ''}>
+    <ClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
       <App />
     </ClerkProvider>
   </StrictMode>,

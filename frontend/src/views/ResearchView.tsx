@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useAuth } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Network } from 'lucide-react'
-import { CostCockpit, estimateTokens, COST_LOW_THRESHOLD } from '../components/chat/CostCockpit'
+import { CommandDeck } from '../components/chat/CommandDeck'
 import { MessageList } from '../components/chat/MessageList'
 import { useNexusStore } from '../store/useNexusStore'
 import { useStreamingResponse } from '../hooks/useStreamingResponse'
@@ -97,14 +97,16 @@ export function ResearchView() {
   const setActiveCitationId = useNexusStore((s) => s.setActiveCitationId)
   const deductCredits = useNexusStore((s) => s.deductCredits)
   const credits = useNexusStore((s) => s.credits)
+  const currentMode = useNexusStore((s) => s.currentMode)
+  const setAttachedFileName = useNexusStore((s) => s.setAttachedFileName)
 
   const { getToken } = useAuth()
   const [input, setInput] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { send: sendStream, error: streamError, isLoading, setError } = useStreamingResponse(
     getToken ? () => getToken() : null
   )
 
-  const costTier = estimateTokens(input) <= COST_LOW_THRESHOLD ? 'low' : 'high'
   const activeCitation = messages
     .flatMap((m) => m.citations ?? [])
     .find((c) => c.id === activeCitationId) ?? null
@@ -153,6 +155,7 @@ export function ResearchView() {
     content: m.content,
     isStreaming: m.id === streamingMessageId,
     isSpoiler: false,
+    reasoning: m.reasoning,
   }))
 
   return (
@@ -160,7 +163,7 @@ export function ResearchView() {
       <div className="flex-1 min-h-0 flex">
         <div className="flex-1 min-w-0 flex flex-col">
           {streamError && (
-            <div className="mx-4 mt-2 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm flex items-center justify-between">
+            <div className="mx-4 mt-2 px-4 py-2 border border-amber-500/20 bg-amber-500/10 text-amber-400 text-sm font-mono flex items-center justify-between">
               {streamError}
               <button type="button" onClick={() => setError(null)} className="underline">
                 Dismiss
@@ -168,15 +171,26 @@ export function ResearchView() {
             </div>
           )}
           <div className="flex-1 overflow-y-auto stream-container-mask px-4 py-6 pb-28">
-            <MessageList messages={msgsForList} />
+            <MessageList messages={msgsForList} mode={currentMode} />
           </div>
-          <CostCockpit
+          <CommandDeck
             value={input}
             onChange={setInput}
             onSend={handleSend}
             disabled={isLoading}
-            costTier={costTier}
-            walletLabel={credits !== 500 ? `${credits} left` : undefined}
+            creditsDisplay={credits}
+            onFileClick={() => fileInputRef.current?.click()}
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept=".pdf,.txt,.md"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              setAttachedFileName(file ? file.name : null)
+              e.target.value = ''
+            }}
           />
         </div>
       </div>

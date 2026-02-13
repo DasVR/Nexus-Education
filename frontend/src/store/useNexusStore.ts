@@ -8,6 +8,7 @@ export type ChatMessage = {
   content: string
   isStreaming?: boolean
   isSpoiler?: boolean
+  reasoning?: string
   citations?: Array<{ id: string; title?: string; author?: string; summary?: string; url?: string }>
 }
 
@@ -34,9 +35,13 @@ type NexusState = {
   isSidebarOpen: boolean
   activeCitationId: string | null
   showArtifactMenu: boolean
+  systemMessage: string
+  attachedFileName: string | null
   setSidebarOpen: (open: boolean) => void
   setActiveCitationId: (id: string | null) => void
   setShowArtifactMenu: (show: boolean) => void
+  setSystemMessage: (msg: string) => void
+  setAttachedFileName: (name: string | null) => void
   toggleSidebar: () => void
 
   // Chat history
@@ -80,9 +85,13 @@ export const useNexusStore = create<NexusState>((set) => ({
   isSidebarOpen: false,
   activeCitationId: null,
   showArtifactMenu: false,
+  systemMessage: '',
+  attachedFileName: null,
   setSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
   setActiveCitationId: (activeCitationId) => set({ activeCitationId }),
   setShowArtifactMenu: (showArtifactMenu) => set({ showArtifactMenu }),
+  setSystemMessage: (systemMessage) => set({ systemMessage }),
+  setAttachedFileName: (attachedFileName) => set({ attachedFileName }),
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
 
   messages: [],
