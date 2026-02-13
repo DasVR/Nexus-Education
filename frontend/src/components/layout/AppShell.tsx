@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { UserButton } from '@clerk/clerk-react'
 import { useNexusStore, type AppMode } from '../../store/useNexusStore'
+import { CitationSidebar } from '../chat/CitationSidebar'
 
 const navItems: { mode: AppMode; icon: React.ElementType; label: string }[] = [
   { mode: 'tutor', icon: Brain, label: 'Tutor' },
@@ -93,6 +94,11 @@ export function AppShell({ children }: AppShellProps) {
   const [binderOpen, setBinderOpen] = useState(false)
   const currentMode = useNexusStore((s) => s.currentMode)
   const setCurrentMode = useNexusStore((s) => s.setCurrentMode)
+  const messages = useNexusStore((s) => s.messages)
+  const activeCitationId = useNexusStore((s) => s.activeCitationId)
+  const setActiveCitationId = useNexusStore((s) => s.setActiveCitationId)
+  const activeCitation =
+    messages.flatMap((m) => m.citations ?? []).find((c) => c.id === activeCitationId) ?? null
 
   return (
     <div className="flex h-screen bg-zinc-950 text-zinc-200 overflow-hidden">
@@ -220,6 +226,11 @@ export function AppShell({ children }: AppShellProps) {
       </main>
 
       <BinderDrawer isOpen={binderOpen} onClose={() => setBinderOpen(false)} />
+      <CitationSidebar
+        isOpen={!!activeCitationId}
+        onClose={() => setActiveCitationId(null)}
+        citation={activeCitation}
+      />
     </div>
   )
 }

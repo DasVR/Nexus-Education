@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import { useAuth } from '@clerk/clerk-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Network } from 'lucide-react'
 import { CommandDeck } from '../components/chat/CommandDeck'
 import { MessageList } from '../components/chat/MessageList'
@@ -8,93 +8,11 @@ import { useNexusStore } from '../store/useNexusStore'
 import { useStreamingResponse } from '../hooks/useStreamingResponse'
 import { SYSTEM_PROMPTS } from '../lib/prompts'
 
-type Citation = { id: string; title?: string; author?: string; summary?: string; url?: string }
-
-function CitationSidebar({
-  isOpen,
-  onClose,
-  citation,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  citation: Citation | null
-}) {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
-            onClick={onClose}
-          />
-          <motion.aside
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md z-50 bg-slate-900/95 backdrop-blur-2xl border-l border-white/10 shadow-xl flex flex-col"
-          >
-            <div className="p-4 flex items-center justify-between border-b border-white/10">
-              <h2 className="font-sans font-semibold text-slate-200">Citation</h2>
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/5"
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto p-4 space-y-4">
-              {citation ? (
-                <>
-                  {citation.title && (
-                    <p className="font-medium text-slate-200">{citation.title}</p>
-                  )}
-                  {citation.author && (
-                    <p className="text-sm text-slate-400">By {citation.author}</p>
-                  )}
-                  {citation.summary && (
-                    <p className="text-sm text-slate-400">{citation.summary}</p>
-                  )}
-                  {citation.url && (
-                    <a
-                      href={citation.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-emerald-500 hover:underline break-all text-sm"
-                    >
-                      {citation.url}
-                    </a>
-                  )}
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 text-sm font-medium"
-                  >
-                    Verify Source
-                  </button>
-                </>
-              ) : (
-                <p className="text-slate-500">Select a citation from the chat.</p>
-              )}
-            </div>
-          </motion.aside>
-        </>
-      )}
-    </AnimatePresence>
-  )
-}
-
 export function ResearchView() {
   const messages = useNexusStore((s) => s.messages)
   const setMessages = useNexusStore((s) => s.setMessages)
   const streamingMessageId = useNexusStore((s) => s.streamingMessageId)
   const setStreamingMessageId = useNexusStore((s) => s.setStreamingMessageId)
-  const activeCitationId = useNexusStore((s) => s.activeCitationId)
-  const setActiveCitationId = useNexusStore((s) => s.setActiveCitationId)
   const deductCredits = useNexusStore((s) => s.deductCredits)
   const credits = useNexusStore((s) => s.credits)
   const currentMode = useNexusStore((s) => s.currentMode)
@@ -106,10 +24,6 @@ export function ResearchView() {
   const { send: sendStream, error: streamError, isLoading, setError } = useStreamingResponse(
     getToken ? () => getToken() : null
   )
-
-  const activeCitation = messages
-    .flatMap((m) => m.citations ?? [])
-    .find((c) => c.id === activeCitationId) ?? null
 
   const handleSend = useCallback(() => {
     const text = input.trim()
@@ -194,12 +108,6 @@ export function ResearchView() {
           />
         </div>
       </div>
-
-      <CitationSidebar
-        isOpen={!!activeCitationId}
-        onClose={() => setActiveCitationId(null)}
-        citation={activeCitation}
-      />
 
       <motion.button
         type="button"

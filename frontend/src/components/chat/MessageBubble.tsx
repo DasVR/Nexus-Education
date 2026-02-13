@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MoreHorizontal } from 'lucide-react'
 import { ActionMatrix } from './ActionMatrix'
+import { AcademicMarkdown } from './AcademicMarkdown'
+import { useNexusStore } from '../../store/useNexusStore'
 
 type MessageBubbleProps = {
   role: 'user' | 'assistant'
@@ -18,6 +20,7 @@ export function MessageBubble({
 }: MessageBubbleProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const setActiveCitationId = useNexusStore((s) => s.setActiveCitationId)
   const isUser = role === 'user'
 
   useEffect(() => {
@@ -100,18 +103,12 @@ export function MessageBubble({
           </div>
         ) : (
           <div className="border border-zinc-800 bg-zinc-950 py-3 px-4 rounded-none">
-            <div
-              className={`text-sm text-zinc-300 font-mono whitespace-pre-wrap break-words [&_strong]:text-white ${
-                isStreaming ? 'stream-mask' : ''
-              }`}
-            >
-              {content || (isStreaming ? '' : '')}
-              {isStreaming && (
-                <span
-                  className="inline-block w-2 h-5 ml-0.5 bg-emerald-500 align-middle cursor-blink-hard"
-                  aria-hidden
-                />
-              )}
+            <div className={isStreaming ? 'stream-mask' : ''}>
+              <AcademicMarkdown
+                content={content || ''}
+                isStreaming={isStreaming}
+                onCitationClick={setActiveCitationId}
+              />
             </div>
             {!isStreaming && content && (
               <ActionMatrix onAction={(id) => console.log('Action:', id)} />
