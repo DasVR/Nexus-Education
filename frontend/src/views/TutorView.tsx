@@ -80,7 +80,7 @@ export function TutorView() {
           </button>
         </div>
       )}
-      <div className="flex-1 overflow-y-auto stream-container-mask px-4 py-6 pb-28">
+      <div className="flex-1 overflow-y-auto stream-container-mask px-4 py-6 pb-40">
         <MessageList messages={msgsForList} mode={currentMode} />
       </div>
       <CommandDeck

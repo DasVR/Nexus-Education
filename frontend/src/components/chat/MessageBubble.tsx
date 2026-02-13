@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MoreHorizontal } from 'lucide-react'
+import { ActionMatrix } from './ActionMatrix'
 
 type MessageBubbleProps = {
   role: 'user' | 'assistant'
@@ -98,21 +99,23 @@ export function MessageBubble({
             </div>
           </div>
         ) : (
-          <div className="border border-zinc-800 bg-zinc-950 py-3 px-4">
+          <div className="border border-zinc-800 bg-zinc-950 py-3 px-4 rounded-none">
             <div
-              className={`text-sm text-zinc-300 font-mono whitespace-pre-wrap break-words ${
+              className={`text-sm text-zinc-300 font-mono whitespace-pre-wrap break-words [&_strong]:text-white ${
                 isStreaming ? 'stream-mask' : ''
               }`}
             >
               {content || (isStreaming ? '' : '')}
               {isStreaming && (
                 <span
-                  className="inline-block w-3 h-4 ml-0.5 bg-emerald-500 align-middle"
-                  style={{ animation: 'cursor-blink 1s step-end infinite' }}
+                  className="inline-block w-2 h-5 ml-0.5 bg-emerald-500 align-middle cursor-blink-hard"
                   aria-hidden
                 />
               )}
             </div>
+            {!isStreaming && content && (
+              <ActionMatrix onAction={(id) => console.log('Action:', id)} />
+            )}
           </div>
         )}
       </div>
