@@ -45,3 +45,26 @@ body {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%);
   mask-image: linear-gradient(to bottom, transparent 0%, black 18%);
 }
+
+/* Scroll container mask: text doesn't hit bottom edge abruptly */
+.stream-container-mask {
+  -webkit-mask-image: linear-gradient(180deg, black 80%, transparent);
+  mask-image: linear-gradient(180deg, black 80%, transparent);
+}
+
+/* Fluid Terminal: subtle grid for empty state */
+.bg-grid-white\/\[0\.02\] {
+  background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Glowing emerald text */
+.text-shadow-emerald {
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}

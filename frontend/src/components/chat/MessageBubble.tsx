@@ -37,9 +37,13 @@ export function MessageBubble({
             isStreaming ? 'stream-mask' : ''
           }`}
         >
-          {content || (isStreaming ? '…' : '')}
+          {content || (isStreaming ? '' : '')}
           {isStreaming && (
-            <span className="inline-block w-2 h-4 ml-0.5 bg-emerald-500/60 animate-pulse" />
+            <span
+              className="inline-block w-3 h-4 ml-0.5 bg-emerald-500 align-middle"
+              style={{ animation: 'cursor-blink 1s step-end infinite' }}
+              aria-hidden
+            />
           )}
         </div>
         {children}

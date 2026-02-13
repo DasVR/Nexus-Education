@@ -3,11 +3,18 @@ import { getCredits } from '../lib/api'
 
 export type Credits = { usedCents: number; limitCents: number }
 
-export function useCredits(token: string | null) {
+export function useCredits(
+  getToken: (() => Promise<string | null>) | null
+) {
   const [credits, setCredits] = useState<Credits | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const fetchCredits = useCallback(async () => {
+    if (!getToken) {
+      setCredits(null)
+      return
+    }
+    const token = await getToken()
     if (!token) {
       setCredits(null)
       return
@@ -28,7 +35,7 @@ export function useCredits(token: string | null) {
       setCredits(null)
       setError('Failed to load credits')
     }
-  }, [token])
+  }, [getToken])
 
   useEffect(() => {
     fetchCredits()

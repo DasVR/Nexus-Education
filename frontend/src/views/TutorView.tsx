@@ -1,0 +1,94 @@
+import { useState, useCallback } from 'react'
+import { useAuth } from '@clerk/clerk-react'
+import { CostCockpit, estimateTokens, COST_LOW_THRESHOLD } from '../components/chat/CostCockpit'
+import { MessageList } from '../components/chat/MessageList'
+import { useNexusStore } from '../store/useNexusStore'
+import { useStreamingResponse } from '../hooks/useStreamingResponse'
+import { SYSTEM_PROMPTS } from '../lib/prompts'
+
+export function TutorView() {
+  const { getToken } = useAuth()
+  const messages = useNexusStore((s) => s.messages)
+  const setMessages = useNexusStore((s) => s.setMessages)
+  const streamingMessageId = useNexusStore((s) => s.streamingMessageId)
+  const setStreamingMessageId = useNexusStore((s) => s.setStreamingMessageId)
+  const deductCredits = useNexusStore((s) => s.deductCredits)
+  const credits = useNexusStore((s) => s.credits)
+
+  const [input, setInput] = useState('')
+  const { send: sendStream, error: streamError, isLoading, setError } = useStreamingResponse(
+    getToken ? () => getToken() : null
+  )
+
+  const costTier = estimateTokens(input) <= COST_LOW_THRESHOLD ? 'low' : 'high'
+
+  const handleSend = useCallback(() => {
+    const text = input.trim()
+    if (!text || isLoading) return
+    setInput('')
+    const userMsg = { id: crypto.randomUUID(), role: 'user' as const, content: text }
+    setMessages((prev) => [...prev, userMsg])
+    const assistantId = crypto.randomUUID()
+    setMessages((prev) => [
+      ...prev,
+      { id: assistantId, role: 'assistant' as const, content: '', isStreaming: true },
+    ])
+    setStreamingMessageId(assistantId)
+    deductCredits(2, 'Tutor query')
+
+    sendStream(
+      {
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPTS.tutor },
+          ...messages.map((m) => ({ role: m.role, content: m.content })),
+          { role: 'user', content: text },
+        ],
+        stream: true,
+        mode: 'tutor',
+      },
+      (chunk) => {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + chunk } : m))
+        )
+      },
+      () => {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantId ? { ...m, isStreaming: false } : m))
+        )
+        setStreamingMessageId(null)
+      }
+    )
+  }, [input, isLoading, messages, setMessages, setStreamingMessageId, deductCredits, sendStream])
+
+  const msgsForList = messages.map((m) => ({
+    id: m.id,
+    role: m.role,
+    content: m.content,
+    isStreaming: m.id === streamingMessageId,
+    isSpoiler: m.isSpoiler ?? false,
+  }))
+
+  return (
+    <div className="flex flex-col h-full">
+      {streamError && (
+        <div className="mx-4 mt-2 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm flex items-center justify-between">
+          {streamError}
+          <button type="button" onClick={() => setError(null)} className="underline">
+            Dismiss
+          </button>
+        </div>
+      )}
+      <div className="flex-1 overflow-y-auto stream-container-mask px-4 py-6 pb-28">
+        <MessageList messages={msgsForList} />
+      </div>
+      <CostCockpit
+        value={input}
+        onChange={setInput}
+        onSend={handleSend}
+        disabled={isLoading}
+        costTier={costTier}
+        walletLabel={credits !== 500 ? `${credits} left` : undefined}
+      />
+    </div>
+  )
+}

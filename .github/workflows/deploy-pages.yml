@@ -39,8 +39,9 @@ jobs:
         env:
           # Required for GitHub Pages: base path is /<repo-name>/
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
-          # Set repository secret VITE_WORKER_URL to your Cloudflare Worker URL (e.g. https://nexus-scholar-worker.you.workers.dev)
+          # Set repository secrets for production:
           VITE_WORKER_URL: ${{ secrets.VITE_WORKER_URL }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

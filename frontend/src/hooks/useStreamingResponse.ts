@@ -1,7 +1,9 @@
 import { useCallback, useState } from 'react'
 import { postChat, type ChatRequestBody } from '../lib/api'
 
-export function useStreamingResponse(token: string | null) {
+export function useStreamingResponse(
+  getToken: (() => Promise<string | null>) | null
+) {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -14,6 +16,7 @@ export function useStreamingResponse(token: string | null) {
       setError(null)
       setIsLoading(true)
       try {
+        const token = getToken ? await getToken() : null
         const res = await postChat({ ...body, stream: true }, token)
         if (res.status === 402) {
           const data = await res.json().catch(() => ({}))
@@ -60,7 +63,7 @@ export function useStreamingResponse(token: string | null) {
         onDone()
       }
     },
-    [token]
+    [getToken]
   )
 
   return { send, error, isLoading, setError }

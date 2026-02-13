@@ -1,8 +1,11 @@
+import { verifyClerkToken } from './clerk'
+
 export interface Env {
   OPENROUTER_API_KEY: string
   CREDITS: KVNamespace
   VISION_MODEL?: string
-  CLERK_SECRET_KEY?: string
+  CLERK_JWKS_URL?: string
+  CLERK_ISSUER_URL?: string
 }
 
 const CORS_HEADERS: Record<string, string> = {
@@ -23,11 +26,13 @@ function jsonResponse(
   })
 }
 
-function getUserId(request: Request, _env: Env): string | null {
+async function getUserId(request: Request, env: Env): Promise<string | null> {
   const auth = request.headers.get('Authorization')
   if (!auth?.startsWith('Bearer ')) return null
-  const token = auth.slice(7)
+  const token = auth.slice(7).trim()
   if (!token) return null
+  const clerk = await verifyClerkToken(env, token)
+  if (clerk) return clerk.sub
   return btoa(token).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24) || 'anon'
 }
 
@@ -92,7 +97,7 @@ export default {
     }
 
     if (path === '/chat' && request.method === 'POST') {
-      const userId = getUserId(request, env) ?? 'anonymous'
+      const userId = (await getUserId(request, env)) ?? 'anonymous'
       const credits = await getCredits(env.CREDITS, userId)
       if (credits.usedCents >= credits.limitCents) {
         return jsonResponse(

@@ -4,9 +4,74 @@ Educational, school-friendly AI assistant with Tutor / Research / Writing modes,
 
 ## Stack
 
-- **Frontend**: React (Vite), Tailwind CSS, Framer Motion → deploy to **GitHub Pages**
+- **Frontend**: React (Vite), Tailwind CSS, Framer Motion, Clerk → deploy to **GitHub Pages**
 - **Backend**: Cloudflare Worker (OpenRouter proxy, KV credits, vision model switch)
-- **Auth**: Clerk (optional; Worker verifies JWT)
+- **Auth**: **Clerk** – frontend signs in; Worker verifies JWT via JWKS
+
+---
+
+## Setting up Clerk (Frontend + Worker)
+
+The app uses [Clerk](https://clerk.com) for sign-in. The frontend shows Clerk’s Sign In UI when not authenticated; the Worker verifies the session JWT and uses the user id for credits.
+
+### 1. Create a Clerk application
+
+1. Go to [dashboard.clerk.com](https://dashboard.clerk.com) and sign in or create an account.
+2. Create a new application (or use an existing one).
+3. In **Configure** → **Domains**, add:
+   - `http://localhost:5173` for local dev
+   - Your GitHub Pages URL, e.g. `https://<username>.github.io/<repo-name>`
+
+### 2. Frontend (env + build)
+
+1. In the Clerk Dashboard, open **API Keys** and copy the **Publishable key** (starts with `pk_test_` or `pk_live_`).
+2. In the repo, create or edit **`frontend/.env`**:
+   ```
+   VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
+   VITE_WORKER_URL=http://localhost:8787
+   ```
+3. For **production** (GitHub Actions), add a repository secret:
+   - **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
+   - Name: `VITE_CLERK_PUBLISHABLE_KEY`
+   - Value: your Clerk publishable key (same as above, or use `pk_live_` for production)
+
+The frontend will then show Clerk’s sign-in when the user is not signed in, and send the session JWT in the `Authorization: Bearer <token>` header to the Worker.
+
+### 3. Worker (verify JWT)
+
+The Worker verifies the Clerk JWT using JWKS and uses the token’s `sub` claim as the user id for credits.
+
+1. In the Clerk Dashboard, open **API Keys** and note your **Frontend API** URL (e.g. `https://xxx.clerk.accounts.dev`). This is your Clerk “issuer” URL.
+2. Set one of these on the Worker (secrets or vars):
+
+   **Option A – Issuer URL (recommended)**  
+   Set the Frontend API URL; the Worker will fetch keys from `/.well-known/jwks.json`:
+   ```bash
+   cd worker
+   npx wrangler secret put CLERK_ISSUER_URL
+   # When prompted, paste: https://<your-frontend-api>.clerk.accounts.dev
+   ```
+
+   **Option B – Full JWKS URL**  
+   If you prefer to set the JWKS URL directly:
+   ```bash
+   npx wrangler secret put CLERK_JWKS_URL
+   # When prompted, paste: https://<your-frontend-api>.clerk.accounts.dev/.well-known/jwks.json
+   ```
+
+3. Redeploy the Worker after setting the secret:
+   ```bash
+   npx wrangler deploy
+   ```
+
+If neither `CLERK_ISSUER_URL` nor `CLERK_JWKS_URL` is set, the Worker still runs but treats the Bearer token as an opaque string and derives a fallback user id (suitable only for local/dev). For production, set one of them so credits are per Clerk user.
+
+### 4. Optional: restrict to school domains
+
+To allow only certain email domains (e.g. `@school.edu`), you can:
+
+- Use Clerk’s **Allowlist** in **Configure** → **Email, phone, username** (restrict sign-up to specific domains), or
+- In the Worker, after verifying the JWT, decode the payload and check the `email` claim (or call Clerk’s API) and return 403 if the domain is not allowed.
 
 ---
 
@@ -62,6 +127,7 @@ Create `frontend/.env` with:
 
 ```
 VITE_WORKER_URL=http://localhost:8787
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx   # from Clerk Dashboard → API Keys
 ```
 
 ### Worker
@@ -82,6 +148,7 @@ Set secrets (or use `.dev.vars` for local):
 
 ```bash
 npx wrangler secret put OPENROUTER_API_KEY
+npx wrangler secret put CLERK_ISSUER_URL    # e.g. https://xxx.clerk.accounts.dev (from Clerk Dashboard)
 ```
 
 Run the worker:
