@@ -1,0 +1,23 @@
+# SSH keys (do not commit)
+ssh
+ssh.pub
+
+# Dependencies
+node_modules/
+
+# Build / env
+frontend/dist/
+.env
+.env.local
+frontend/.env
+worker/.dev.vars
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
