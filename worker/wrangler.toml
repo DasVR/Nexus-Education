@@ -8,6 +8,6 @@ compatibility_date = "2026-02-13"
 
 [[kv_namespaces]]
 binding = "CREDITS"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = "58172834a67248d491c5b883a0c0cd30"
 
 # Create namespace: wrangler kv namespace create CREDITS
