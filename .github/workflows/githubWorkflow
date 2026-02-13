@@ -1,0 +1,7 @@
+- name: Deploy Worker
+  uses: cloudflare/wrangler-action@v3
+  with:
+    apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    # Tell the action to 'cd' into your worker folder first
+    workingDirectory: 'worker' 
+    command: deploy
