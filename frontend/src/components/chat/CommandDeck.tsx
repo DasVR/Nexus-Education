@@ -1,25 +1,20 @@
-import { useRef } from 'react'
-import { motion } from 'framer-motion'
-import { Paperclip, Check } from 'lucide-react'
+import { useRef, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Mic, Image, Send } from 'lucide-react'
 import { useNexusStore, type AppMode } from '../../store/useNexusStore'
+import { FuelGauge } from './FuelGauge'
 
-const CREDITS_MAX = 500
-const FUEL_BLOCKS = 8
-const LOW_PCT = 0.2
-const CRITICAL_PCT = 0.05
+const MIN_CREDITS_FOR_VOICE_IMAGE = 10 // cents
+const TEXTAREA_MIN_ROWS = 1
+const TEXTAREA_MAX_ROWS_MOBILE = 4
+const TEXTAREA_MAX_ROWS_DESKTOP = 8
+const TOUCH_TARGET_MIN = 44
 
-const MODE_CHIPS: Record<AppMode, { label: string; className: string }> = {
-  tutor: { label: 'TUTOR', className: 'text-[var(--accent-primary)]' },
-  research: { label: 'RESEARCH', className: 'text-[var(--reliable)]' },
-  writing: { label: 'WRITING', className: 'text-[var(--accent-primary)]' },
-  council: { label: 'COUNCIL', className: 'text-[var(--text-tertiary)]' },
-}
-
-function creditState(remainingPct: number): 'healthy' | 'moderate' | 'low' | 'critical' {
-  if (remainingPct < CRITICAL_PCT) return 'critical'
-  if (remainingPct < LOW_PCT) return 'low'
-  if (remainingPct < 0.6) return 'moderate'
-  return 'healthy'
+const MODE_LABELS: Record<AppMode, string> = {
+  tutor: 'TUTOR',
+  research: 'RESEARCH',
+  writing: 'WRITING',
+  council: 'COUNCIL',
 }
 
 export type CommandDeckProps = {
@@ -27,8 +22,10 @@ export type CommandDeckProps = {
   onChange: (v: string) => void
   onSend: () => void
   disabled?: boolean
+  /** Credits remaining in cents */
   creditsDisplay: number
   onFileClick?: () => void
+  onVoiceClick?: () => void
 }
 
 export function CommandDeck({
@@ -38,93 +35,69 @@ export function CommandDeck({
   disabled,
   creditsDisplay,
   onFileClick,
+  onVoiceClick,
 }: CommandDeckProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const currentMode = useNexusStore((s) => s.currentMode)
-  const systemMessage = useNexusStore((s) => s.systemMessage)
-  const attachedFileName = useNexusStore((s) => s.attachedFileName)
+  const creditLimit = useNexusStore((s) => s.creditLimit)
 
-  const usedCents = Math.max(0, CREDITS_MAX - creditsDisplay)
-  const usedLevel = Math.min(1, usedCents / CREDITS_MAX)
-  const filledBlocks = Math.round(usedLevel * FUEL_BLOCKS)
-  const usedDollar = (usedCents / 100).toFixed(2)
-  const remainingPct = creditsDisplay / CREDITS_MAX
-  const state = creditState(remainingPct)
-  const creditBarColor =
-    state === 'critical'
-      ? 'var(--error)'
-      : state === 'low' || state === 'moderate'
-        ? 'var(--warning)'
-        : 'var(--accent-primary)'
+  const balanceDollars = creditsDisplay / 100
+  const limitDollars = creditLimit / 100
+  const canUseVoiceImage = creditsDisplay >= MIN_CREDITS_FOR_VOICE_IMAGE
+  const hasText = value.trim().length > 0
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      onSend()
-    }
-  }
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        onSend()
+      }
+    },
+    [onSend]
+  )
+
+  // Auto-resize textarea: min 1 line, max 4 (mobile) / 8 (desktop)
+  const adjustTextareaHeight = useCallback(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    const lineHeight = 24
+    const maxRows =
+      typeof window !== 'undefined' && window.innerWidth >= 768
+        ? TEXTAREA_MAX_ROWS_DESKTOP
+        : TEXTAREA_MAX_ROWS_MOBILE
+    const minH = TEXTAREA_MIN_ROWS * lineHeight
+    const maxH = maxRows * lineHeight
+    const h = Math.min(maxH, Math.max(minH, el.scrollHeight))
+    el.style.height = `${h}px`
+  }, [])
+
+  useEffect(() => {
+    adjustTextareaHeight()
+  }, [value, adjustTextareaHeight])
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-30 flex flex-col border-t border-[var(--border-default)]"
-      style={{ background: 'var(--bg-surface)' }}
+      className="fixed bottom-0 left-0 right-0 z-30 flex flex-col bg-bg-primary border-t border-border-default"
+      role="region"
+      aria-label="Message input"
     >
-      {/* Row 1: Status Bar — credits */}
-      <div
-        className="flex items-center justify-between gap-4 px-4 h-8 border-b text-xs font-ui shrink-0"
-        style={{ borderColor: 'var(--border-subtle)' }}
-      >
-        <div className="shrink-0 uppercase tracking-wider">
-          <span className={MODE_CHIPS[currentMode].className}>
-            {MODE_CHIPS[currentMode].label}
-          </span>
-        </div>
-        <div className="flex-1 min-w-0 flex items-center justify-center gap-2 truncate" style={{ color: 'var(--text-tertiary)' }}>
-          {attachedFileName && (
-            <span className="flex items-center gap-1.5 shrink-0" style={{ color: 'var(--text-secondary)' }}>
-              <Check className="w-3 h-3" style={{ color: 'var(--success)' }} />
-              {attachedFileName}
-            </span>
-          )}
-          {systemMessage && !attachedFileName && <span className="truncate">{systemMessage}</span>}
-        </div>
-        <div className="shrink-0 flex items-center gap-2">
-          <div className="flex gap-0.5" aria-hidden>
-            {Array.from({ length: FUEL_BLOCKS }, (_, i) => (
-              <motion.span
-                key={i}
-                className="block w-2 h-3 border border-[var(--border-default)]"
-                initial={false}
-                animate={{
-                  backgroundColor: i < filledBlocks ? creditBarColor : 'transparent',
-                }}
-                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-              />
-            ))}
-          </div>
-          <span
-            className={`tabular-nums whitespace-nowrap credit-display ${state}`}
-            style={{ color: state === 'healthy' ? 'var(--text-secondary)' : undefined }}
-            role="status"
-            aria-live="polite"
-            aria-label={`Credits remaining: $${(creditsDisplay / 100).toFixed(2)} of $5.00`}
-          >
-            ${usedDollar} / $5.00
-          </span>
-        </div>
-      </div>
-
-      {/* Row 2: Input Area */}
-      <div className="flex items-center gap-2 px-4 min-h-[100px]" style={{ borderColor: 'var(--border-subtle)' }}>
-        <button
-          type="button"
-          onClick={onFileClick}
-          className="shrink-0 p-2 border border-transparent duration-fast transition-colors hover:opacity-90"
-          style={{ color: 'var(--text-tertiary)' }}
-          aria-label="Attach file"
+      <div className="w-full max-w-4xl mx-auto flex flex-col">
+        {/* Status Bar */}
+        <div
+          className="flex items-center justify-between gap-4 px-4 py-2 border-b border-border-default shrink-0"
+          style={{ minHeight: TOUCH_TARGET_MIN }}
         >
-          <Paperclip className="w-4 h-4" />
-        </button>
+          <div className="shrink-0 font-ui text-xs uppercase tracking-wider text-accent-primary">
+            MODE: {MODE_LABELS[currentMode]}
+          </div>
+          <div className="shrink-0">
+            <FuelGauge balance={balanceDollars} limit={limitDollars} />
+          </div>
+        </div>
+
+        {/* Input Area */}
+        <div className="flex items-center gap-2 px-4 py-3 min-h-[72px]">
         <textarea
           ref={textareaRef}
           value={value}
@@ -132,24 +105,58 @@ export function CommandDeck({
           onKeyDown={handleKeyDown}
           placeholder="Type your question..."
           disabled={disabled}
-          rows={3}
-          className="flex-1 min-w-0 resize-none bg-transparent focus:outline-none font-body text-lg py-3 placeholder:opacity-70"
-          style={{ color: 'var(--text-primary)' }}
+          rows={TEXTAREA_MIN_ROWS}
+          className="flex-1 min-w-0 resize-none bg-transparent border-none focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary/40 focus-visible:ring-inset font-body text-base placeholder:text-text-tertiary py-2"
+          style={{ minHeight: 24 * TEXTAREA_MIN_ROWS }}
           aria-label="Type your question"
         />
-        <button
-          type="button"
-          onClick={onSend}
-          disabled={disabled || !value.trim()}
-          className="shrink-0 px-3 py-2 border font-ui text-sm uppercase duration-fast transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{
-            borderColor: 'var(--border-default)',
-            color: value.trim() ? 'var(--accent-primary)' : 'var(--text-disabled)',
-          }}
-          aria-label="Send message"
-        >
-          Send
-        </button>
+
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Voice — 44px touch target */}
+          <button
+            type="button"
+            onClick={onVoiceClick}
+            disabled={disabled || !canUseVoiceImage}
+            className="flex items-center justify-center w-11 h-11 rounded-ds text-text-tertiary hover:text-accent-primary hover:bg-bg-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-gentle"
+            aria-label="Voice input"
+            title="Voice input"
+          >
+            <Mic className="w-5 h-5" />
+          </button>
+
+          {/* Image / attach — 44px touch target */}
+          <button
+            type="button"
+            onClick={onFileClick}
+            disabled={disabled || !canUseVoiceImage}
+            className="flex items-center justify-center w-11 h-11 rounded-ds text-text-tertiary hover:text-accent-primary hover:bg-bg-elevated disabled:opacity-40 disabled:cursor-not-allowed transition-gentle"
+            aria-label="Attach image or file"
+            title="Attach image or file"
+          >
+            <Image className="w-5 h-5" />
+          </button>
+
+          {/* Send — visible when text entered */}
+          <AnimatePresence initial={false}>
+            {hasText && (
+              <motion.button
+                type="button"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                onClick={onSend}
+                disabled={disabled}
+                className="flex items-center justify-center w-11 h-11 rounded-ds bg-accent-primary text-bg-primary hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-gentle min-w-[44px]"
+                aria-label="Send message"
+                title="Send"
+              >
+                <Send className="w-5 h-5" />
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
       </div>
     </div>
   )

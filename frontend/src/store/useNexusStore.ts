@@ -20,10 +20,12 @@ export type SpendingEntry = {
 }
 
 type NexusState = {
-  // User economy
+  // User economy (credits in cents)
   credits: number
+  creditLimit: number
   spendingHistory: SpendingEntry[]
   setCredits: (credits: number) => void
+  setCreditLimit: (limit: number) => void
   addSpending: (amount: number, reason: string) => void
   deductCredits: (amount: number, reason: string) => void
 
@@ -54,12 +56,15 @@ type NexusState = {
   clearMessages: () => void
 }
 
-const CREDITS_INITIAL = 500 // cents or units
+const CREDITS_INITIAL = 500 // cents ($5.00)
+const CREDIT_LIMIT_DEFAULT = 500 // cents ($5.00)
 
 export const useNexusStore = create<NexusState>((set) => ({
   credits: CREDITS_INITIAL,
+  creditLimit: CREDIT_LIMIT_DEFAULT,
   spendingHistory: [],
   setCredits: (credits) => set({ credits }),
+  setCreditLimit: (creditLimit) => set({ creditLimit }),
   addSpending: (amount, reason) =>
     set((state) => ({
       spendingHistory: [
