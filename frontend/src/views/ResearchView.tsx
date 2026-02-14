@@ -70,6 +70,7 @@ export function ResearchView() {
     isStreaming: m.id === streamingMessageId,
     isSpoiler: false,
     reasoning: m.reasoning,
+    citations: m.citations,
   }))
 
   return (

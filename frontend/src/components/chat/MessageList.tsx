@@ -5,6 +5,14 @@ import { ThinkingDrawer } from './ThinkingDrawer'
 import { BlurToLearn } from './BlurToLearn'
 import type { AppMode } from '../../store/useNexusStore'
 
+export type MessageCitation = {
+  id: string
+  title?: string
+  author?: string
+  summary?: string
+  url?: string
+}
+
 export type Message = {
   id: string
   role: 'user' | 'assistant'
@@ -12,6 +20,7 @@ export type Message = {
   isStreaming?: boolean
   isSpoiler?: boolean
   reasoning?: string
+  citations?: MessageCitation[]
 }
 
 type MessageListProps = {
@@ -56,6 +65,7 @@ export function MessageList({ messages, mode, isPaidTier = false }: MessageListP
                 content={msg.content}
                 isStreaming={msg.isStreaming}
                 showDiffOption={mode === 'writing'}
+                citations={msg.citations}
               />
             </>
           )}

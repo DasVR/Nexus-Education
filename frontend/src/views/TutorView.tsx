@@ -68,6 +68,7 @@ export function TutorView() {
     isStreaming: m.id === streamingMessageId,
     isSpoiler: m.isSpoiler ?? false,
     reasoning: m.reasoning,
+    citations: m.citations,
   }))
 
   return (

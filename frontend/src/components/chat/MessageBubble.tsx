@@ -1,15 +1,24 @@
-import { useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MoreHorizontal } from 'lucide-react'
 import { ActionMatrix } from './ActionMatrix'
-import { AcademicMarkdown } from './AcademicMarkdown'
+import { AcademicRenderer, type Citation } from './AcademicRenderer'
 import { useNexusStore } from '../../store/useNexusStore'
+
+type MessageCitation = {
+  id: string
+  title?: string
+  author?: string
+  summary?: string
+  url?: string
+}
 
 type MessageBubbleProps = {
   role: 'user' | 'assistant'
   content: string
   isStreaming?: boolean
   showDiffOption?: boolean
+  citations?: MessageCitation[]
 }
 
 export function MessageBubble({
@@ -17,11 +26,24 @@ export function MessageBubble({
   content,
   isStreaming,
   showDiffOption,
+  citations: rawCitations,
 }: MessageBubbleProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const setActiveCitationId = useNexusStore((s) => s.setActiveCitationId)
   const isUser = role === 'user'
+
+  const citations: Citation[] = useMemo(
+    () =>
+      (rawCitations ?? []).map((c) => ({
+        id: parseInt(c.id, 10) || 0,
+        title: c.title ?? '',
+        url: c.url ?? '',
+        source: c.author ?? c.summary ?? '',
+        trustLevel: 'unverified' as const,
+      })),
+    [rawCitations]
+  )
 
   useEffect(() => {
     if (!menuOpen) return
@@ -115,10 +137,11 @@ export function MessageBubble({
         ) : (
           <div className="border py-3 px-4 rounded-ds" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}>
             <div className={isStreaming ? 'stream-mask' : ''}>
-              <AcademicMarkdown
+              <AcademicRenderer
                 content={content || ''}
+                citations={citations}
                 isStreaming={isStreaming}
-                onCitationClick={setActiveCitationId}
+                onCitationClick={(id) => setActiveCitationId(String(id))}
               />
             </div>
             {!isStreaming && content && (
