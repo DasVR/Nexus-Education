@@ -9,8 +9,9 @@ import {
   BookMarked,
 } from 'lucide-react'
 import { UserButton } from '@clerk/clerk-react'
+import { useMemo } from 'react'
 import { useNexusStore, type AppMode } from '../../store/useNexusStore'
-import { CitationSidebar } from '../chat/CitationSidebar'
+import { SourceDrawer, type Citation as SourceDrawerCitation } from '../chat/SourceDrawer'
 
 const navItems: { mode: AppMode; icon: React.ElementType; label: string }[] = [
   { mode: 'tutor', icon: Brain, label: 'Tutor' },
@@ -98,8 +99,20 @@ export function AppShell({ children }: AppShellProps) {
   const messages = useNexusStore((s) => s.messages)
   const activeCitationId = useNexusStore((s) => s.activeCitationId)
   const setActiveCitationId = useNexusStore((s) => s.setActiveCitationId)
-  const activeCitation =
+  const rawCitation =
     messages.flatMap((m) => m.citations ?? []).find((c) => c.id === activeCitationId) ?? null
+
+  const sourceDrawerCitation: SourceDrawerCitation | null = useMemo(() => {
+    if (!rawCitation) return null
+    return {
+      id: parseInt(rawCitation.id, 10) || 0,
+      title: rawCitation.title ?? '',
+      url: rawCitation.url ?? '',
+      source: rawCitation.author ?? rawCitation.summary ?? '',
+      trustLevel: (rawCitation as { trustLevel?: 'verified' | 'reliable' | 'unverified' }).trustLevel ?? 'unverified',
+      snippet: rawCitation.summary,
+    }
+  }, [rawCitation])
 
   return (
     <div className="flex h-screen overflow-hidden bg-bg-primary text-text-primary">
@@ -223,10 +236,10 @@ export function AppShell({ children }: AppShellProps) {
       </main>
 
       <BinderDrawer isOpen={binderOpen} onClose={() => setBinderOpen(false)} />
-      <CitationSidebar
+      <SourceDrawer
+        citation={sourceDrawerCitation}
         isOpen={!!activeCitationId}
         onClose={() => setActiveCitationId(null)}
-        citation={activeCitation}
       />
     </div>
   )
