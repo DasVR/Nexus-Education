@@ -15,7 +15,7 @@ function AppContent() {
   const currentMode = useNexusStore((s) => s.currentMode)
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-bg-primary text-text-primary">
       <AppShell>
         {currentMode === 'tutor' && <TutorView />}
         {currentMode === 'research' && <ResearchView />}
@@ -33,12 +33,12 @@ function App() {
         <AppContent />
       </SignedIn>
       <SignedOut>
-        <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 gap-6">
+        <div className="min-h-screen bg-bg-primary text-text-primary flex flex-col items-center justify-center p-4 gap-6">
           <header className="flex items-center gap-3">
             <SignInButton mode="modal">
               <button
                 type="button"
-                className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 font-medium"
+                className="px-4 py-2 rounded-ds font-ui font-medium bg-bg-surface text-accent-primary border border-accent-primary/30 hover:bg-bg-elevated transition-colors duration-fast"
               >
                 Sign in
               </button>
@@ -46,7 +46,7 @@ function App() {
             <SignUpButton mode="modal">
               <button
                 type="button"
-                className="px-4 py-2 rounded-lg bg-slate-700 text-slate-200 border border-white/10 hover:bg-slate-600 font-medium"
+                className="px-4 py-2 rounded-ds font-ui font-medium bg-bg-surface text-text-secondary border border-border-default hover:bg-bg-elevated hover:text-text-primary transition-colors duration-fast"
               >
                 Sign up
               </button>
@@ -56,14 +56,14 @@ function App() {
             appearance={{
               elements: {
                 rootBox: 'mx-auto',
-                card: 'bg-slate-900/80 border border-white/10 shadow-xl',
+                card: '!bg-bg-elevated border border-border-default shadow-xl',
               },
               variables: {
-                colorPrimary: '#10b981',
-                colorBackground: '#0f172a',
-                colorText: '#e2e8f0',
-                colorInputBackground: '#1e293b',
-                colorInputText: '#e2e8f0',
+                colorPrimary: '#fb923c',
+                colorBackground: '#1a1816',
+                colorText: '#f5f3f0',
+                colorInputBackground: '#2c2725',
+                colorInputText: '#f5f3f0',
               },
             }}
           />

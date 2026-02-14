@@ -1330,6 +1330,22 @@ export function wrapLatex(str: string): string {
 
 ---
 
+## 📋 Component files that need color updates
+
+Use the warm palette (Tailwind: `bg-bg-primary`, `text-text-primary`, `accent-primary`, etc.) and replace cold colors (slate, zinc-950, emerald) in these files:
+
+| File | Notes |
+|------|--------|
+| `frontend/src/views/ResearchView.tsx` | Replace slate-800, slate-200, emerald-400 with bg-bg-surface, text-text-primary, text-accent-primary |
+| `frontend/src/views/WritingView.tsx` | Replace slate-300/500/200, white/10 borders, emerald-500 with text-text-secondary, border-border-default, accent-primary |
+| `frontend/src/components/chat/BlurToLearn.tsx` | Replace slate-800/900, slate-200/400, emerald-500 with bg-bg-surface/bg-elevated, text-text-primary, accent-primary |
+| `frontend/src/components/chat/CostCockpit.tsx` | Replace slate-950/900/800, slate-400/100/500, emerald-500 with warm palette (or remove if superseded by CommandDeck) |
+| `frontend/src/pages/ChatPage.tsx` | Replace text-slate-200, text-slate-500 with text-text-primary, text-text-tertiary |
+
+**Already updated:** App.tsx, AppShell.tsx, CommandDeck.tsx, ThinkingBlock.tsx, ActionMatrix.tsx, AcademicMarkdown.tsx, CitationSidebar.tsx, CitationDrawer.tsx, MessageBubble.tsx, ChatInterface.tsx, TutorView.tsx.
+
+---
+
 **This design system is a living document. Update as you learn from users and iterate on features.**
 
 **Last Updated:** February 13, 2026  

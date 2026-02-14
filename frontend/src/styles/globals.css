@@ -1,63 +1,87 @@
 /**
  * Nexus Scholar Design System — Global styles
- * Typography, focus, reduced motion
+ * Typography, focus, reduced motion. Full tokens in tokens.css
  */
+
+:root {
+  /* Background layers */
+  --bg-primary: #1a1816;
+  --bg-surface: #2c2725;
+  --bg-elevated: #3d3735;
+  /* Text */
+  --text-primary: #f5f3f0;
+  --text-secondary: #a8a29e;
+  /* Accent */
+  --accent-primary: #fb923c;
+  /* Interactive states */
+  --overlay: rgba(0, 0, 0, 0.6);
+  --hover-bg: rgba(251, 146, 60, 0.1);
+  --active-bg: rgba(251, 146, 60, 0.15);
+  --focus-ring: rgba(251, 146, 60, 0.4);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
 
 /* Headers — Display font (Plus Jakarta Sans) */
 h1,
 .heading-1 {
   font-family: var(--font-display);
-  font-size: var(--text-3xl);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-tight);
-  color: var(--text-primary);
+  font-size: 1.875rem; /* 30px */
+  font-weight: 700;
+  line-height: 1.25;
   letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
 
 h2,
 .heading-2 {
   font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: var(--weight-semibold);
-  line-height: var(--leading-tight);
+  font-size: 1.5rem; /* 24px */
+  font-weight: 600;
+  line-height: 1.25;
   color: var(--text-primary);
 }
 
 h3,
 .heading-3 {
   font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: var(--weight-medium);
-  line-height: var(--leading-normal);
+  font-size: 1.25rem; /* 20px */
+  font-weight: 500;
+  line-height: 1.5;
   color: var(--text-secondary);
 }
 
 /* Body text — Serif (Crimson Pro) */
 .body-text {
   font-family: var(--font-body);
-  font-size: var(--text-base);
-  font-weight: var(--weight-normal);
-  line-height: var(--leading-relaxed);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.75;
   color: var(--text-primary);
 }
 
+/* AI responses, reading content */
 .ai-response {
   font-family: var(--font-body);
-  font-size: var(--text-lg);
-  line-height: var(--leading-relaxed);
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.75;
   color: var(--text-primary);
 }
 
-/* UI elements — Sans (Inter) */
-.ui-label,
+/* UI elements — Sans (Inter): buttons, labels */
 button,
+.button,
+.ui-label,
 input,
 textarea {
   font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  line-height: var(--leading-normal);
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
   letter-spacing: 0.01em;
+  line-height: 1.5;
 }
 
 /* Code / math — Mono */
@@ -149,7 +173,24 @@ pre,
   border-radius: 4px;
 }
 
-/* Reduced motion */
+/* Animation utilities — gentle, kind interactions */
+.transition-gentle {
+  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.transition-fast {
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-breathe {
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-breathe:hover {
+  transform: scale(1.02);
+}
+
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

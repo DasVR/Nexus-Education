@@ -102,21 +102,20 @@ export function AppShell({ children }: AppShellProps) {
     messages.flatMap((m) => m.citations ?? []).find((c) => c.id === activeCitationId) ?? null
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div className="flex h-screen overflow-hidden bg-bg-primary text-text-primary">
       {/* Navigation rail — design system mode selector */}
       <motion.aside
-        className="shrink-0 flex flex-col items-stretch border-r"
-        style={{ background: 'var(--bg-primary)', borderColor: 'var(--border-subtle)' }}
+        className="shrink-0 flex flex-col items-stretch border-r border-border-subtle bg-bg-primary"
         initial={false}
         animate={{ width: expanded ? 220 : 56 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
       >
-        <div className="p-2 border-b border-zinc-800 shrink-0 flex items-center justify-between gap-2 min-h-[52px]">
+        <div className="p-2 border-b border-border-subtle shrink-0 flex items-center justify-between gap-2 min-h-[52px]">
           <div className="flex items-center gap-2 overflow-hidden min-w-0">
-            <div className="shrink-0 w-9 h-9 border border-zinc-800 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-emerald-500" />
+            <div className="shrink-0 w-9 h-9 border border-border-default flex items-center justify-center rounded-ds">
+              <Sparkles className="w-4 h-4 text-accent-primary" />
             </div>
             <AnimatePresence>
               {expanded && (
@@ -124,7 +123,7 @@ export function AppShell({ children }: AppShellProps) {
                   initial={{ opacity: 0, width: 0 }}
                   animate={{ opacity: 1, width: 'auto' }}
                   exit={{ opacity: 0, width: 0 }}
-                  className="font-mono text-xs text-zinc-400 whitespace-nowrap overflow-hidden"
+                  className="font-display font-semibold text-sm text-text-secondary whitespace-nowrap overflow-hidden"
                 >
                   Nexus Scholar
                 </motion.span>
@@ -177,7 +176,7 @@ export function AppShell({ children }: AppShellProps) {
           <button
             type="button"
             onClick={() => setBinderOpen(true)}
-            className="flex items-center gap-2 rounded px-2 py-2 w-full text-left text-zinc-500 hover:text-zinc-400 hover:border-zinc-800 border border-transparent font-mono text-xs transition-colors"
+            className="mode-button flex items-center gap-2 rounded-ds px-2 py-2 w-full text-left"
             aria-label="Binder"
           >
             <span className="shrink-0 flex items-center justify-center w-8 h-8">
@@ -219,7 +218,7 @@ export function AppShell({ children }: AppShellProps) {
         </button>
       </motion.aside>
 
-      <main className="flex-1 min-w-0 flex flex-col border-l border-zinc-800 bg-zinc-950">
+      <main className="flex-1 min-w-0 flex flex-col border-l border-border-subtle bg-bg-primary">
         {children}
       </main>
 
