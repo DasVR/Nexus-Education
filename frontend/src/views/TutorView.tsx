@@ -4,7 +4,6 @@ import { CommandDeck } from '../components/chat/CommandDeck'
 import { MessageList } from '../components/chat/MessageList'
 import { useNexusStore } from '../store/useNexusStore'
 import { useStreamingResponse } from '../hooks/useStreamingResponse'
-import { SYSTEM_PROMPTS } from '../lib/prompts'
 
 export function TutorView() {
   const { getToken } = useAuth()
@@ -23,16 +22,16 @@ export function TutorView() {
     getToken ? () => getToken() : null
   )
 
-  const handleSend = useCallback(() => {
-    const text = input.trim()
+  const handleSend = useCallback((overrideText?: string) => {
+    const text = (overrideText ?? input).trim()
     if (!text || isLoading) return
-    setInput('')
+    if (!overrideText) setInput('')
     const userMsg = { id: crypto.randomUUID(), role: 'user' as const, content: text }
     setMessages((prev) => [...prev, userMsg])
     const assistantId = crypto.randomUUID()
     setMessages((prev) => [
       ...prev,
-      { id: assistantId, role: 'assistant' as const, content: '', isStreaming: true },
+      { id: assistantId, role: 'assistant' as const, content: '', reasoning: '', isStreaming: true },
     ])
     setStreamingMessageId(assistantId)
     deductCredits(2, 'Tutor query')
@@ -40,16 +39,21 @@ export function TutorView() {
     sendStream(
       {
         messages: [
-          { role: 'system', content: SYSTEM_PROMPTS.tutor },
           ...messages.map((m) => ({ role: m.role, content: m.content })),
           { role: 'user', content: text },
         ],
         stream: true,
         mode: 'tutor',
       },
-      (chunk) => {
+      (chunk, chunkType) => {
         setMessages((prev) =>
-          prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + chunk } : m))
+          prev.map((m) => {
+            if (m.id !== assistantId) return m
+            if (chunkType === 'reasoning') {
+              return { ...m, reasoning: (m.reasoning ?? '') + chunk }
+            }
+            return { ...m, content: m.content + chunk }
+          })
         )
       },
       () => {
@@ -82,7 +86,11 @@ export function TutorView() {
         </div>
       )}
       <div className="flex-1 overflow-y-auto stream-container-mask px-4 py-6 pb-40">
-        <MessageList messages={msgsForList} mode={currentMode} />
+        <MessageList
+          messages={msgsForList}
+          mode={currentMode}
+          onFollowUpAction={(prompt) => handleSend(prompt)}
+        />
       </div>
       <CommandDeck
         value={input}

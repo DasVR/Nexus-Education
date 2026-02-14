@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { slideUp } from '../../utils/animations'
 import { slideInRight } from '../../utils/motionVariants'
 import { playSound } from '../../utils/soundEffects'
+import { useSwipeGesture } from '../../hooks/useSwipeGesture'
 
 const DRAWER_TRANSITION = { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }
 const MD_BREAKPOINT = 768
@@ -92,9 +93,15 @@ export function SourceDrawer({ citation, isOpen, onClose }: SourceDrawerProps) {
     return () => clearTimeout(t)
   }, [citation?.url])
 
+  const swipeBind = useSwipeGesture({
+    onSwipeDown: onClose,
+    threshold: 50,
+  })
+
   if (!citation) return null
 
   const variants = isMobile ? slideUp : slideInRight
+  const drawerSwipeProps = isMobile ? swipeBind() : {}
 
   return (
     <AnimatePresence>
@@ -113,13 +120,14 @@ export function SourceDrawer({ citation, isOpen, onClose }: SourceDrawerProps) {
             aria-label="Close drawer"
           />
 
+          <div {...drawerSwipeProps} className="fixed z-50 bottom-0 left-0 right-0 md:top-0 md:bottom-0 md:left-auto md:right-0 md:w-full md:max-w-md max-h-[80vh] md:max-h-full rounded-t-2xl md:rounded-none overflow-y-auto touch-none">
           <motion.div
             initial={variants.initial}
             animate={variants.animate}
             exit={variants.exit}
             transition={DRAWER_TRANSITION}
             className="
-              fixed z-50 overflow-y-auto
+              fixed z-50 overflow-y-auto touch-none
               bottom-0 left-0 right-0
               md:top-0 md:bottom-0 md:left-auto md:right-0 md:w-full md:max-w-md
               bg-bg-surface
@@ -243,6 +251,7 @@ export function SourceDrawer({ citation, isOpen, onClose }: SourceDrawerProps) {
               )}
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

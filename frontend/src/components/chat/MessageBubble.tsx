@@ -1,9 +1,10 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MoreHorizontal } from 'lucide-react'
-import { ActionMatrix } from './ActionMatrix'
+import { FollowUpMatrix } from './FollowUpMatrix'
 import { AcademicRenderer, type Citation } from './AcademicRenderer'
 import { useNexusStore } from '../../store/useNexusStore'
+import { useLongPress } from '../../hooks/useLongPress'
 
 type MessageCitation = {
   id: string
@@ -19,6 +20,9 @@ type MessageBubbleProps = {
   isStreaming?: boolean
   showDiffOption?: boolean
   citations?: MessageCitation[]
+  mode?: string
+  onFollowUpAction?: (prompt: string) => void
+  isGenerating?: boolean
 }
 
 export function MessageBubble({
@@ -27,11 +31,26 @@ export function MessageBubble({
   isStreaming,
   showDiffOption,
   citations: rawCitations,
+  mode = 'tutor',
+  onFollowUpAction,
+  isGenerating = false,
 }: MessageBubbleProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [copyToast, setCopyToast] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const setActiveCitationId = useNexusStore((s) => s.setActiveCitationId)
   const isUser = role === 'user'
+
+  const longPressBind = useLongPress({
+    onLongPress: () => {
+      if (!content) return
+      navigator.clipboard.writeText(content).then(() => {
+        setCopyToast(true)
+        setTimeout(() => setCopyToast(false), 2000)
+      })
+    },
+    delay: 500,
+  })
 
   const citations: Citation[] = useMemo(
     () =>
@@ -129,13 +148,29 @@ export function MessageBubble({
           </div>
         )}
         {isUser ? (
-          <div className="flex items-end gap-2">
-            <div className="border-r-2 pr-2 py-1 text-sm font-ui whitespace-pre-wrap break-words text-right" style={{ borderColor: 'var(--border-default)', color: 'var(--text-primary)' }}>
+          <div className="flex items-end gap-2 relative">
+            <div
+              {...longPressBind}
+              className="border-r-2 pr-2 py-1 text-sm font-ui whitespace-pre-wrap break-words text-right select-none touch-manipulation" style={{ borderColor: 'var(--border-default)', color: 'var(--text-primary)' }}
+            >
               {content}
             </div>
+            {copyToast && (
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded font-ui text-xs bg-bg-elevated border border-border-default text-text-secondary shadow-sm">
+                Message copied
+              </span>
+            )}
           </div>
         ) : (
-          <div className="border py-3 px-4 rounded-ds" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}>
+          <div
+            {...longPressBind}
+            className="border py-3 px-4 rounded-ds relative select-none touch-manipulation" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}
+          >
+            {copyToast && (
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded font-ui text-xs bg-bg-elevated border border-border-default text-text-secondary shadow-sm z-10">
+                Message copied
+              </span>
+            )}
             <div className={isStreaming ? 'stream-mask' : ''}>
               <AcademicRenderer
                 content={content || ''}
@@ -144,8 +179,12 @@ export function MessageBubble({
                 onCitationClick={(id) => setActiveCitationId(String(id))}
               />
             </div>
-            {!isStreaming && content && (
-              <ActionMatrix onAction={(id) => console.log('Action:', id)} />
+            {!isStreaming && content && onFollowUpAction && (
+              <FollowUpMatrix
+                onAction={onFollowUpAction}
+                disabled={isGenerating}
+                mode={mode}
+              />
             )}
           </div>
         )}

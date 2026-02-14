@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback } from 'react'
+import { useDebouncedCallback } from 'use-debounce'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mic, Image, Send } from 'lucide-react'
 import { useNexusStore, type AppMode } from '../../store/useNexusStore'
@@ -56,7 +57,6 @@ export function CommandDeck({
     [onSend]
   )
 
-  // Auto-resize textarea: min 1 line, max 4 (mobile) / 8 (desktop)
   const adjustTextareaHeight = useCallback(() => {
     const el = textareaRef.current
     if (!el) return
@@ -72,9 +72,11 @@ export function CommandDeck({
     el.style.height = `${h}px`
   }, [])
 
+  const debouncedResize = useDebouncedCallback(adjustTextareaHeight, 100)
+
   useEffect(() => {
-    adjustTextareaHeight()
-  }, [value, adjustTextareaHeight])
+    debouncedResize()
+  }, [value, debouncedResize])
 
   return (
     <div

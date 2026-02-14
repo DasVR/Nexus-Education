@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -163,7 +163,9 @@ const markdownComponents = () => ({
   },
 })
 
-export function AcademicRenderer({
+const components = markdownComponents()
+
+export const AcademicRenderer = memo(function AcademicRenderer({
   content,
   citations: _citations = [],
   onCitationClick,
@@ -177,8 +179,7 @@ export function AcademicRenderer({
     [onCitationClick]
   )
 
-  const segments = splitCitations(content)
-  const components = markdownComponents()
+  const segments = useMemo(() => splitCitations(content), [content])
 
   if (segments.length === 0) {
     return (
@@ -221,4 +222,4 @@ export function AcademicRenderer({
       )}
     </div>
   )
-}
+})

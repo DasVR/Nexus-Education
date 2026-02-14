@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { expand, pulse } from '../../utils/animations'
 import { playSound } from '../../utils/soundEffects'
+import { useSwipeGesture } from '../../hooks/useSwipeGesture'
 
 const EXPAND_DURATION_MS = 400
 const AUTO_EXPAND_DELAY_MS = 3000
+const MD_BREAKPOINT = 768
 
 export interface ThinkingDrawerProps {
   /** Content from <reasoning> tag */
@@ -42,15 +44,34 @@ export function ThinkingDrawer({
     setIsOpen((prev) => !prev)
   }, [isOpen])
 
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < MD_BREAKPOINT : false
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${MD_BREAKPOINT - 1}px)`)
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  const swipeBind = useSwipeGesture({
+    onSwipeUp: () => setIsOpen(true),
+    onSwipeDown: () => setIsOpen(false),
+    threshold: 30,
+  })
+
   const hasContent = !!reasoning?.trim()
   const showDrawer = hasContent || isGenerating
 
-  // TODO (mobile): Swipe-up gesture to expand — add touch handlers or use a gesture library
   if (!showDrawer) return null
+
+  const wrapperProps = isMobile ? swipeBind() : {}
 
   return (
     <div
-      className="mb-4 border border-border-default bg-bg-surface rounded-ds overflow-hidden"
+      {...wrapperProps}
+      className="mb-4 border border-border-default bg-bg-surface rounded-ds overflow-hidden touch-none"
       role="region"
       aria-label="Reasoning process"
     >

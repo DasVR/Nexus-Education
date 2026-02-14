@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Brain,
@@ -11,7 +11,12 @@ import {
 import { UserButton } from '@clerk/clerk-react'
 import { useMemo } from 'react'
 import { useNexusStore, type AppMode } from '../../store/useNexusStore'
-import { SourceDrawer, type Citation as SourceDrawerCitation } from '../chat/SourceDrawer'
+import type { Citation as SourceDrawerCitation } from '../chat/SourceDrawer'
+import { SoundSettings } from '../settings/SoundSettings'
+
+const SourceDrawer = lazy(() =>
+  import('../chat/SourceDrawer').then((m) => ({ default: m.SourceDrawer }))
+)
 
 const navItems: { mode: AppMode; icon: React.ElementType; label: string }[] = [
   { mode: 'tutor', icon: Brain, label: 'Tutor' },
@@ -87,6 +92,49 @@ function BinderDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   )
 }
 
+function SettingsDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40"
+            style={{ background: 'var(--overlay)' }}
+            onClick={onClose}
+          />
+          <motion.aside
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed top-0 right-0 bottom-0 w-full max-w-sm z-50 flex flex-col drawer"
+            style={{ background: 'var(--bg-elevated)', borderLeft: '1px solid var(--border-subtle)' }}
+          >
+            <div className="p-4 flex items-center justify-between border-b shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
+              <h2 className="font-display font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Settings</h2>
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 rounded-lg duration-fast transition-colors"
+                style={{ color: 'var(--text-tertiary)' }}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-4">
+              <SoundSettings />
+            </div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}
+
 type AppShellProps = {
   children: React.ReactNode
 }
@@ -94,6 +142,7 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
   const [expanded, setExpanded] = useState(false)
   const [binderOpen, setBinderOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const currentMode = useNexusStore((s) => s.currentMode)
   const setCurrentMode = useNexusStore((s) => s.setCurrentMode)
   const messages = useNexusStore((s) => s.messages)
@@ -236,11 +285,14 @@ export function AppShell({ children }: AppShellProps) {
       </main>
 
       <BinderDrawer isOpen={binderOpen} onClose={() => setBinderOpen(false)} />
-      <SourceDrawer
-        citation={sourceDrawerCitation}
-        isOpen={!!activeCitationId}
-        onClose={() => setActiveCitationId(null)}
-      />
+      <SettingsDrawer isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <Suspense fallback={null}>
+        <SourceDrawer
+          citation={sourceDrawerCitation}
+          isOpen={!!activeCitationId}
+          onClose={() => setActiveCitationId(null)}
+        />
+      </Suspense>
     </div>
   )
 }

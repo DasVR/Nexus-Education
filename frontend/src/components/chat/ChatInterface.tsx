@@ -5,7 +5,6 @@ import { CitationDrawer } from './CitationDrawer'
 import { useStreamingResponse } from '../../hooks/useStreamingResponse'
 import { useCredits } from '../../hooks/useCredits'
 import { useNexusStore } from '../../store/useNexusStore'
-import { SYSTEM_PROMPTS } from '../../lib/prompts'
 
 type Mode = 'tutor' | 'research' | 'writing'
 
@@ -51,16 +50,10 @@ export function ChatInterface() {
         id: assistantId,
         role: 'assistant',
         content: '',
+        reasoning: '',
         isStreaming: true,
       },
     ])
-
-    const systemPrompt =
-      mode === 'tutor'
-        ? SYSTEM_PROMPTS.tutor
-        : mode === 'research'
-          ? SYSTEM_PROMPTS.research
-          : SYSTEM_PROMPTS.writing
 
     const allMessages = [
       ...messages,
@@ -69,20 +62,19 @@ export function ChatInterface() {
 
     sendStream(
       {
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...allMessages,
-        ],
+        messages: allMessages,
         stream: true,
         mode,
       },
-      (chunk) => {
+      (chunk, chunkType) => {
         setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantId
-              ? { ...m, content: m.content + chunk }
-              : m
-          )
+          prev.map((m) => {
+            if (m.id !== assistantId) return m
+            if (chunkType === 'reasoning') {
+              return { ...m, reasoning: (m.reasoning ?? '') + chunk }
+            }
+            return { ...m, content: m.content + chunk }
+          })
         )
       },
       () => {

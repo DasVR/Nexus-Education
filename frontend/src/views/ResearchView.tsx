@@ -6,7 +6,6 @@ import { CommandDeck } from '../components/chat/CommandDeck'
 import { MessageList } from '../components/chat/MessageList'
 import { useNexusStore } from '../store/useNexusStore'
 import { useStreamingResponse } from '../hooks/useStreamingResponse'
-import { SYSTEM_PROMPTS } from '../lib/prompts'
 
 export function ResearchView() {
   const messages = useNexusStore((s) => s.messages)
@@ -25,10 +24,10 @@ export function ResearchView() {
     getToken ? () => getToken() : null
   )
 
-  const handleSend = useCallback(() => {
-    const text = input.trim()
+  const handleSend = useCallback((overrideText?: string) => {
+    const text = (overrideText ?? input).trim()
     if (!text || isLoading) return
-    setInput('')
+    if (!overrideText) setInput('')
     const userMsg = { id: crypto.randomUUID(), role: 'user' as const, content: text }
     setMessages((prev) => [...prev, userMsg])
     const assistantId = crypto.randomUUID()
@@ -42,7 +41,6 @@ export function ResearchView() {
     sendStream(
       {
         messages: [
-          { role: 'system', content: SYSTEM_PROMPTS.research },
           ...messages.map((m) => ({ role: m.role, content: m.content })),
           { role: 'user', content: text },
         ],
@@ -86,7 +84,11 @@ export function ResearchView() {
             </div>
           )}
           <div className="flex-1 overflow-y-auto stream-container-mask px-4 py-6 pb-40">
-            <MessageList messages={msgsForList} mode={currentMode} />
+            <MessageList
+              messages={msgsForList}
+              mode={currentMode}
+              onFollowUpAction={(prompt) => handleSend(prompt)}
+            />
           </div>
           <CommandDeck
             value={input}

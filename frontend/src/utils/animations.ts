@@ -29,6 +29,7 @@ export const expand = {
 
 /** Stagger children (follow-up buttons) */
 export const staggerContainer = {
+  initial: {},
   animate: {
     transition: {
       staggerChildren: 0.1,

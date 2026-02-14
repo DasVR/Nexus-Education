@@ -1,4 +1,6 @@
 import { verifyClerkToken } from './clerk'
+import { SYSTEM_PROMPTS } from './config/systemPrompts'
+import { createStreamParser } from './streamParser'
 
 export interface Env {
   OPENROUTER_API_KEY: string
@@ -85,7 +87,7 @@ export default {
       if (request.method !== 'GET') {
         return jsonResponse({ error: 'Method not allowed' }, 405)
       }
-      const userId = getUserId(request, env)
+      const userId = await getUserId(request, env)
       if (!userId) {
         return jsonResponse(
           { usedCents: 0, limitCents: 500 },
@@ -107,9 +109,10 @@ export default {
       }
 
       let body: {
-        messages: Array<{ role: string; content: unknown }>
+        messages?: Array<{ role: string; content: unknown }>
         model?: string
         stream?: boolean
+        mode?: string
       }
       try {
         body = await request.json()
@@ -117,7 +120,21 @@ export default {
         return jsonResponse({ error: 'Invalid JSON' }, 400)
       }
 
-      const messages = Array.isArray(body.messages) ? body.messages : []
+      const mode = body.mode && typeof body.mode === 'string' ? body.mode : null
+      const systemPrompt =
+        mode && SYSTEM_PROMPTS[mode] ? SYSTEM_PROMPTS[mode] : SYSTEM_PROMPTS.tutor
+
+      let messages = Array.isArray(body.messages) ? body.messages : []
+      if (mode) {
+        const withoutSystem = messages.filter(
+          (m) => (m.role || '').toLowerCase() !== 'system'
+        )
+        messages = [
+          { role: 'system', content: systemPrompt },
+          ...withoutSystem,
+        ]
+      }
+
       const stream = body.stream === true
       let targetModel =
         body.model || 'openai/gpt-4o-mini'
@@ -157,18 +174,72 @@ export default {
       await putCredits(env.CREDITS, userId, newUsed, credits.limitCents)
 
       if (stream) {
-        const headers = new Headers(openRouterRes.headers)
-        CORS_HEADERS['Access-Control-Expose-Headers'] = 'Content-Type'
-        headers.forEach((v, k) => {
-          if (k.toLowerCase() === 'content-type') {
-            (headers as Record<string, string>)[k] = v
-          }
+        const parseTutorTags = mode === 'tutor'
+        if (!parseTutorTags) {
+          return new Response(openRouterRes.body, {
+            status: 200,
+            headers: {
+              ...CORS_HEADERS,
+              'Content-Type': openRouterRes.headers.get('Content-Type') || 'text/event-stream',
+            },
+          })
+        }
+
+        const encoder = new TextEncoder()
+        const parser = createStreamParser((type, text) => {
+          // Enqueue synchronously from inside emit - we need controller in closure
+          enqueue(type, text)
         })
-        return new Response(openRouterRes.body, {
+        let enqueue: (type: 'reasoning' | 'content', text: string) => void
+
+        const transformedStream = new ReadableStream({
+          start(controller) {
+            enqueue = (type, text) => {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type, text })}\n\n`)
+              )
+            }
+          },
+          async pull(controller) {
+            const reader = openRouterRes.body!.getReader()
+            const decoder = new TextDecoder()
+            let buffer = ''
+            try {
+              while (true) {
+                const { done, value } = await reader.read()
+                if (done) {
+                  parser.flush()
+                  controller.close()
+                  return
+                }
+                buffer += decoder.decode(value, { stream: true })
+                const lines = buffer.split('\n')
+                buffer = lines.pop() || ''
+                for (const line of lines) {
+                  if (line.startsWith('data: ')) {
+                    const data = line.slice(6)
+                    if (data === '[DONE]') continue
+                    try {
+                      const parsed = JSON.parse(data)
+                      const content = parsed.choices?.[0]?.delta?.content
+                      if (typeof content === 'string') parser.feed(content)
+                    } catch {
+                      // ignore incomplete JSON
+                    }
+                  }
+                }
+              }
+            } catch (err) {
+              controller.error(err)
+            }
+          },
+        })
+
+        return new Response(transformedStream, {
           status: 200,
           headers: {
             ...CORS_HEADERS,
-            'Content-Type': openRouterRes.headers.get('Content-Type') || 'text/event-stream',
+            'Content-Type': 'text/event-stream',
           },
         })
       }

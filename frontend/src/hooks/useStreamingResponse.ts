@@ -10,7 +10,7 @@ export function useStreamingResponse(
   const send = useCallback(
     async (
       body: Omit<ChatRequestBody, 'stream'> & { stream: true },
-      onChunk: (text: string) => void,
+      onChunk: (text: string, chunkType?: 'reasoning' | 'content') => void,
       onDone: () => void
     ) => {
       setError(null)
@@ -48,8 +48,12 @@ export function useStreamingResponse(
               if (data === '[DONE]') continue
               try {
                 const parsed = JSON.parse(data)
-                const content = parsed.choices?.[0]?.delta?.content
-                if (typeof content === 'string') onChunk(content)
+                if (parsed.type !== undefined && typeof parsed.text === 'string') {
+                  onChunk(parsed.text, parsed.type)
+                } else {
+                  const content = parsed.choices?.[0]?.delta?.content
+                  if (typeof content === 'string') onChunk(content)
+                }
               } catch {
                 // ignore parse errors for incomplete chunks
               }
