@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { MessageBubble } from './MessageBubble'
 import { ThinkingBlock } from './ThinkingBlock'
+import { ThinkingDrawer } from './ThinkingDrawer'
 import { BlurToLearn } from './BlurToLearn'
 import type { AppMode } from '../../store/useNexusStore'
 
@@ -16,9 +17,11 @@ export type Message = {
 type MessageListProps = {
   messages: Message[]
   mode?: AppMode
+  /** Paid tier: auto-expand reasoning drawer after 3s */
+  isPaidTier?: boolean
 }
 
-export function MessageList({ messages, mode }: MessageListProps) {
+export function MessageList({ messages, mode, isPaidTier = false }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -33,7 +36,14 @@ export function MessageList({ messages, mode }: MessageListProps) {
             <BlurToLearn content={msg.content} />
           ) : (
             <>
-              {msg.role === 'assistant' && (msg.reasoning != null || msg.isStreaming) && (
+              {msg.role === 'assistant' && mode === 'tutor' && (msg.reasoning != null || msg.isStreaming) && (
+                <ThinkingDrawer
+                  reasoning={msg.reasoning ?? ''}
+                  isGenerating={!!msg.isStreaming}
+                  autoExpand={isPaidTier}
+                />
+              )}
+              {msg.role === 'assistant' && mode !== 'tutor' && (msg.reasoning != null || msg.isStreaming) && (
                 <div className="mb-2">
                   <ThinkingBlock
                     reasoning={msg.reasoning}
