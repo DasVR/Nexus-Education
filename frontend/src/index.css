@@ -1,26 +1,25 @@
+@import './styles/tokens.css';
+@import './styles/globals.css';
+@import './styles/animations.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --bg-deep: #09090b;
-  --text-primary: #e4e4e7;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
-}
 
 * {
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
 }
 
 body {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  background: var(--bg-deep);
+  font-family: var(--font-ui);
+  background: var(--bg-primary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 }

@@ -9,8 +9,7 @@ import { Copy, Check } from 'lucide-react'
 import { splitCitations } from '../../lib/rehypeCitationButtons'
 import 'katex/dist/katex.min.css'
 
-const CITATION_PILL_CLASS =
-  'inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-[10px] font-mono font-bold text-emerald-500 border border-emerald-500/50 bg-emerald-500/10 align-baseline cursor-pointer hover:bg-emerald-500/20 transition-colors'
+const CITATION_PILL_CLASS = 'citation-badge'
 
 type CitationPillProps = { id: string; onCitationClick?: (id: string) => void }
 function CitationPill({ id, onCitationClick }: CitationPillProps) {
@@ -42,12 +41,15 @@ function CodeBlock({ language, code }: CodeBlockProps) {
   }, [code])
 
   return (
-    <div className="relative group my-2 border border-zinc-800">
-      <div className="flex items-center justify-end gap-2 pr-2 py-1 border-b border-zinc-800 bg-zinc-900/80">
+    <div className="relative group my-2 border rounded" style={{ borderColor: 'var(--border-default)' }}>
+      <div className="flex items-center justify-end gap-2 pr-2 py-1 border-b rounded-t" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-elevated)' }}>
         <button
           type="button"
           onClick={copy}
-          className="flex items-center gap-1.5 px-2 py-1 font-mono text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 hover:border-zinc-600 transition-colors"
+          className="flex items-center gap-1.5 px-2 py-1 font-mono text-xs transition-colors duration-fast"
+          style={{ color: 'var(--text-tertiary)' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-tertiary)' }}
         >
           {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           {copied ? 'Copied' : 'Copy'}
@@ -60,11 +62,11 @@ function CodeBlock({ language, code }: CodeBlockProps) {
           margin: 0,
           padding: '0.75rem 1rem',
           fontSize: '0.8125rem',
-          background: '#18181b',
+          background: 'var(--bg-primary)',
           border: 'none',
           borderRadius: 0,
         }}
-        codeTagProps={{ style: { fontFamily: 'JetBrains Mono, ui-monospace, monospace' } }}
+        codeTagProps={{ style: { fontFamily: 'var(--font-mono)' } }}
         showLineNumbers={false}
         PreTag="div"
       >
@@ -79,44 +81,45 @@ const markdownComponents = () => ({
     <span className="inline [&:not(:last-child)]:mr-1">{children}</span>
   ),
   strong: ({ children }: { children?: React.ReactNode }) => (
-    <strong className="font-bold text-white">{children}</strong>
+    <strong className="font-semibold" style={{ color: 'var(--text-primary)' }}>{children}</strong>
   ),
   a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-emerald-500 underline hover:text-emerald-400"
+      className="underline duration-fast transition-colors hover:opacity-90"
+      style={{ color: 'var(--accent-primary)' }}
     >
       {children}
     </a>
   ),
   h1: ({ children }: { children?: React.ReactNode }) => (
-    <h1 className="font-bold text-emerald-400 text-base mt-3 mb-1 first:mt-0">{children}</h1>
+    <h1 className="font-display font-bold text-base mt-3 mb-1 first:mt-0" style={{ color: 'var(--accent-primary)' }}>{children}</h1>
   ),
   h2: ({ children }: { children?: React.ReactNode }) => (
-    <h2 className="font-bold text-emerald-400 text-sm mt-3 mb-1 first:mt-0">{children}</h2>
+    <h2 className="font-display font-semibold text-sm mt-3 mb-1 first:mt-0" style={{ color: 'var(--accent-subtle)' }}>{children}</h2>
   ),
   h3: ({ children }: { children?: React.ReactNode }) => (
-    <h3 className="font-bold text-emerald-400 text-sm mt-2 mb-1 first:mt-0">{children}</h3>
+    <h3 className="font-display font-medium text-sm mt-2 mb-1 first:mt-0" style={{ color: 'var(--text-secondary)' }}>{children}</h3>
   ),
   table: ({ children }: { children?: React.ReactNode }) => (
     <div className="my-2 overflow-x-auto">
-      <table className="border-collapse border border-zinc-700 w-full font-mono text-xs">
+      <table className="border-collapse w-full font-mono text-xs" style={{ borderColor: 'var(--border-default)' }}>
         {children}
       </table>
     </div>
   ),
   thead: ({ children }: { children?: React.ReactNode }) => (
-    <thead className="bg-zinc-800">{children}</thead>
+    <thead style={{ background: 'var(--bg-elevated)' }}>{children}</thead>
   ),
   th: ({ children }: { children?: React.ReactNode }) => (
-    <th className="border border-zinc-700 px-2 py-1.5 text-left text-zinc-300 font-semibold">
+    <th className="border px-2 py-1.5 text-left font-semibold" style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}>
       {children}
     </th>
   ),
   td: ({ children }: { children?: React.ReactNode }) => (
-    <td className="border border-zinc-700 px-2 py-1.5 text-zinc-400">{children}</td>
+    <td className="border px-2 py-1.5" style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}>{children}</td>
   ),
   tr: ({ children }: { children?: React.ReactNode }) => <tr>{children}</tr>,
   tbody: ({ children }: { children?: React.ReactNode }) => <tbody>{children}</tbody>,
@@ -136,7 +139,7 @@ const markdownComponents = () => ({
       return <CodeBlock language={match?.[1]} code={code} />
     }
     return (
-      <code className="px-1 py-0.5 bg-zinc-800 border border-zinc-700 text-zinc-300 font-mono text-xs" {...props}>
+      <code className="px-1 py-0.5 font-mono text-xs rounded" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }} {...props}>
         {children}
       </code>
     )
@@ -154,20 +157,21 @@ export function AcademicMarkdown({ content, isStreaming, onCitationClick }: Acad
   const components = markdownComponents()
 
   if (segments.length === 0) {
-    return (
-      <span className="text-sm text-zinc-300 font-mono leading-relaxed">
-        {isStreaming && (
-          <span
-            className="inline-block w-2 h-5 ml-0.5 bg-emerald-500 align-middle cursor-blink-hard"
-            aria-hidden
-          />
-        )}
-      </span>
-    )
+  return (
+    <span className="ai-response text-sm leading-relaxed">
+      {isStreaming && (
+        <span
+          className="inline-block w-2 h-5 ml-0.5 align-middle cursor-blink-hard"
+          style={{ background: 'var(--accent-primary)' }}
+          aria-hidden
+        />
+      )}
+    </span>
+  )
   }
 
   return (
-    <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1 text-sm text-zinc-300 font-mono leading-relaxed [&_.citation-pill]:shrink-0">
+    <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1 text-sm leading-relaxed ai-response [&_.citation-badge]:shrink-0">
       {segments.map((seg, i) => {
         if (seg.type === 'citation') {
           return (
@@ -192,7 +196,8 @@ export function AcademicMarkdown({ content, isStreaming, onCitationClick }: Acad
       })}
       {isStreaming && (
         <span
-          className="inline-block w-2 h-5 ml-0.5 bg-emerald-500 align-middle cursor-blink-hard"
+          className="inline-block w-2 h-5 ml-0.5 align-middle cursor-blink-hard"
+          style={{ background: 'var(--accent-primary)' }}
           aria-hidden
         />
       )}

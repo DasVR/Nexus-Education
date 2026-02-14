@@ -1,0 +1,58 @@
+/**
+ * Nexus Scholar Design System — Animation utilities
+ */
+
+/* Interactive elements */
+.button,
+.link,
+.badge {
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+/* Content reveals */
+.drawer,
+.modal,
+.accordion {
+  transition: all var(--duration-base) var(--ease-out);
+}
+
+/* Delightful moments */
+.typewriter-effect,
+.sketch-animation {
+  transition: all var(--duration-delightful) var(--ease-out);
+}
+
+/* Hover breathe */
+.hover-breathe:hover {
+  transform: scale(1.02);
+  transition: transform var(--duration-instant) var(--ease-out);
+}
+
+/* Credit display states */
+.credit-display.healthy {
+  color: var(--text-secondary);
+}
+
+.credit-display.moderate {
+  color: var(--warning);
+}
+
+.credit-display.low {
+  color: var(--warning);
+  animation: ds-pulse 2s infinite;
+}
+
+.credit-display.critical {
+  color: var(--error);
+  animation: ds-pulse 1s infinite;
+}
+
+@keyframes ds-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

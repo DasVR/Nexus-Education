@@ -1,0 +1,91 @@
+/**
+ * Nexus Scholar Design System — Design Tokens
+ * Version 1.0 | Dark mode foundation (default)
+ */
+
+:root {
+  /* Background Layers */
+  --bg-primary: #1a1816;
+  --bg-surface: #2c2725;
+  --bg-elevated: #3d3735;
+
+  /* Text Hierarchy */
+  --text-primary: #f5f3f0;
+  --text-secondary: #a8a29e;
+  --text-tertiary: #78716c;
+  --text-disabled: #57534e;
+
+  /* Accent Colors */
+  --accent-primary: #fb923c;
+  --accent-hover: #f97316;
+  --accent-subtle: #fdba74;
+
+  /* Semantic Colors */
+  --success: #84cc16;
+  --success-bg: #3f6212;
+  --warning: #fbbf24;
+  --warning-bg: #78350f;
+  --error: #f87171;
+  --error-bg: #7f1d1d;
+
+  /* Special States (sources) */
+  --verified: #84cc16;
+  --reliable: #60a5fa;
+  --unverified: #a8a29e;
+
+  /* Borders & Dividers */
+  --border-subtle: #3d3735;
+  --border-default: #57534e;
+  --border-emphasis: #78716c;
+
+  /* Interactive States */
+  --overlay: rgba(0, 0, 0, 0.6);
+  --hover-bg: rgba(251, 146, 60, 0.1);
+  --active-bg: rgba(251, 146, 60, 0.15);
+  --focus-ring: rgba(251, 146, 60, 0.4);
+
+  /* Typography — Font Families */
+  --font-display: 'Plus Jakarta Sans', -apple-system, system-ui, sans-serif;
+  --font-body: 'Crimson Pro', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --font-ui: 'Inter', -apple-system, system-ui, sans-serif;
+
+  /* Type Scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Font Weights */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Duration Tokens */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 400ms;
+  --duration-delightful: 600ms;
+
+  /* Easing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Breakpoints (for reference / JS) */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}

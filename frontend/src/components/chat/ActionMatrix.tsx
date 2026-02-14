@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion'
+import { staggerChild } from '../../utils/motionVariants'
 
-const STAGGER_MS = 100
 const CHIPS = [
-  { id: 'el5', label: 'EXPLAIN_LIKE_IM_5' },
-  { id: 'quiz', label: 'GENERATE_QUIZ' },
+  { id: 'el5', label: 'EXPLAIN_SIMPLER' },
+  { id: 'quiz', label: 'QUIZ_ME' },
   { id: 'sources', label: 'FIND_SOURCES' },
-  { id: 'binder', label: 'SAVE_TO_BINDER' },
+  { id: 'example', label: 'SHOW_EXAMPLE' },
 ]
 
 type ActionMatrixProps = {
@@ -19,18 +19,14 @@ export function ActionMatrix({ onAction }: ActionMatrixProps) {
         <motion.button
           key={chip.id}
           type="button"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            type: 'spring',
-            stiffness: 400,
-            damping: 30,
-            delay: i * (STAGGER_MS / 1000),
-          }}
+          variants={staggerChild}
+          initial="initial"
+          animate="animate"
+          transition={{ ...staggerChild.transition, delay: i * 0.1 }}
           onClick={() => onAction?.(chip.id)}
-          className="font-mono text-xs px-3 py-1.5 border border-zinc-700 text-zinc-400 bg-transparent hover:bg-emerald-500 hover:text-zinc-950 hover:border-emerald-500 transition-colors duration-75"
+          className="action-chip"
         >
-          &gt; {chip.label}
+          {chip.label}
         </motion.button>
       ))}
     </div>

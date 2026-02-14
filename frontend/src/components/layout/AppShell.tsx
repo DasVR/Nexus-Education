@@ -36,22 +36,25 @@ function BinderDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/40"
+            className="fixed inset-0 z-40"
+            style={{ background: 'var(--overlay)' }}
             onClick={onClose}
           />
           <motion.aside
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-sm z-50 bg-zinc-950 border-l border-zinc-800 flex flex-col"
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed top-0 right-0 bottom-0 w-full max-w-sm z-50 flex flex-col drawer"
+            style={{ background: 'var(--bg-elevated)', borderLeft: '1px solid var(--border-subtle)' }}
           >
-            <div className="p-4 flex items-center justify-between border-b border-zinc-800 shrink-0">
-              <h2 className="font-mono text-sm text-zinc-300 uppercase tracking-wider">Binder</h2>
+            <div className="p-4 flex items-center justify-between border-b shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
+              <h2 className="font-display font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Binder</h2>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 text-zinc-500 hover:text-zinc-300 border border-zinc-800 hover:border-zinc-600 font-mono"
+                className="p-2 rounded-lg duration-fast transition-colors"
+                style={{ color: 'var(--text-tertiary)' }}
                 aria-label="Close"
               >
                 ✕
@@ -62,16 +65,14 @@ function BinderDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                 {artifacts.map((a) => (
                   <div
                     key={a.id}
-                    className="border border-zinc-800 bg-zinc-900/50 p-3 font-mono text-xs"
+                    className="border rounded-ds p-3 font-ui text-xs"
+                    style={{ borderColor: 'var(--border-default)', background: 'var(--bg-surface)' }}
                   >
-                    <p className="text-zinc-300 truncate">{a.title}</p>
-                    <p className="text-zinc-500 mt-1">
+                    <p className="truncate" style={{ color: 'var(--text-primary)' }}>{a.title}</p>
+                    <p className="mt-1" style={{ color: 'var(--text-tertiary)' }}>
                       {new Date(a.timestamp).toLocaleString()}
                     </p>
-                    <button
-                      type="button"
-                      className="mt-2 px-2 py-1 border border-zinc-700 text-zinc-400 hover:border-emerald-500 hover:text-emerald-500 text-xs uppercase"
-                    >
+                    <button type="button" className="action-chip mt-2">
                       Review
                     </button>
                   </div>
@@ -101,10 +102,11 @@ export function AppShell({ children }: AppShellProps) {
     messages.flatMap((m) => m.citations ?? []).find((c) => c.id === activeCitationId) ?? null
 
   return (
-    <div className="flex h-screen bg-zinc-950 text-zinc-200 overflow-hidden">
-      {/* Navigation rail - minimal, collapsed by default, expand on hover */}
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      {/* Navigation rail — design system mode selector */}
       <motion.aside
-        className="shrink-0 flex flex-col items-stretch bg-zinc-950 border-r border-zinc-800"
+        className="shrink-0 flex flex-col items-stretch border-r"
+        style={{ background: 'var(--bg-primary)', borderColor: 'var(--border-subtle)' }}
         initial={false}
         animate={{ width: expanded ? 220 : 56 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
@@ -135,9 +137,9 @@ export function AppShell({ children }: AppShellProps) {
               appearance={{
                 elements: { avatarBox: 'w-7 h-7' },
                 variables: {
-                  colorPrimary: '#10b981',
-                  colorText: '#e4e4e7',
-                  colorBackground: '#18181b',
+                  colorPrimary: '#fb923c',
+                  colorText: '#f5f3f0',
+                  colorBackground: '#2c2725',
                 },
               }}
             />
@@ -152,11 +154,7 @@ export function AppShell({ children }: AppShellProps) {
                 key={mode}
                 type="button"
                 onClick={() => setCurrentMode(mode)}
-                className={`relative flex items-center gap-2 rounded px-2 py-2 w-full text-left transition-colors font-mono text-xs ${
-                  isActive
-                    ? 'text-emerald-500 border border-zinc-700'
-                    : 'text-zinc-500 hover:text-zinc-400 hover:border-zinc-800 border border-transparent'
-                }`}
+                className={`mode-button relative flex items-center gap-2 rounded-ds px-2 py-2 w-full text-left ${isActive ? 'active' : ''}`}
               >
                 <span className="shrink-0 flex items-center justify-center w-8 h-8">
                   <Icon className="w-4 h-4" />
@@ -202,7 +200,7 @@ export function AppShell({ children }: AppShellProps) {
 
         <button
           type="button"
-          className="flex items-center gap-2 rounded px-2 py-2 mx-2 mb-2 text-zinc-500 hover:text-zinc-400 border border-transparent hover:border-zinc-800 font-mono text-xs transition-colors"
+          className="mode-button flex items-center gap-2 rounded-ds px-2 py-2 mx-2 mb-2"
           aria-label="Settings"
         >
           <Settings className="w-4 h-4 shrink-0" />

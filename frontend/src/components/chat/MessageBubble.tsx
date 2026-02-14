@@ -34,21 +34,22 @@ export function MessageBubble({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full group`}
     >
       <div className={`max-w-[85%] relative ${isUser ? 'flex flex-col items-end' : ''}`}>
         {!isUser && (
-          <div ref={menuRef} className="absolute top-0 right-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div ref={menuRef} className="absolute top-0 right-0 z-10 opacity-0 group-hover:opacity-100 duration-fast transition-opacity">
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation()
                 setMenuOpen((o) => !o)
               }}
-              className="p-1.5 text-zinc-500 hover:text-zinc-300 border border-zinc-800 hover:border-zinc-600 bg-zinc-950"
+              className="p-1.5 border rounded"
+              style={{ color: 'var(--text-tertiary)', borderColor: 'var(--border-default)', background: 'var(--bg-primary)' }}
               aria-label="Actions"
             >
               <MoreHorizontal className="w-4 h-4" />
@@ -59,34 +60,44 @@ export function MessageBubble({
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="absolute right-0 top-full mt-1 py-1 border border-zinc-800 bg-zinc-950 font-mono text-xs min-w-[180px]"
+                  className="absolute right-0 top-full mt-1 py-1 border rounded-ds font-ui text-xs min-w-[180px]"
+                  style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}
                 >
                   <li>
                     <button
                       type="button"
-                      className="w-full px-3 py-2 text-left text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                      className="w-full px-3 py-2 text-left duration-fast transition-colors rounded-t-ds"
+                      style={{ color: 'var(--text-secondary)' }}
                       onClick={() => setMenuOpen(false)}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover-bg)' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                     >
-                      &gt; SAVE_TO_BINDER
+                      SAVE_TO_BINDER
                     </button>
                   </li>
                   <li>
                     <button
                       type="button"
-                      className="w-full px-3 py-2 text-left text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                      className="w-full px-3 py-2 text-left duration-fast transition-colors"
+                      style={{ color: 'var(--text-secondary)' }}
                       onClick={() => setMenuOpen(false)}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover-bg)' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                     >
-                      &gt; GENERATE_QUIZ
+                      GENERATE_QUIZ
                     </button>
                   </li>
                   {showDiffOption && (
                     <li>
                       <button
                         type="button"
-                        className="w-full px-3 py-2 text-left text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                        className="w-full px-3 py-2 text-left duration-fast transition-colors rounded-b-ds"
+                        style={{ color: 'var(--text-secondary)' }}
                         onClick={() => setMenuOpen(false)}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover-bg)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                       >
-                        &gt; DIFF_VIEW
+                        DIFF_VIEW
                       </button>
                     </li>
                   )}
@@ -97,12 +108,12 @@ export function MessageBubble({
         )}
         {isUser ? (
           <div className="flex items-end gap-2">
-            <div className="border-r-2 border-zinc-700 pr-2 py-1 text-zinc-300 text-sm font-mono whitespace-pre-wrap break-words text-right">
+            <div className="border-r-2 pr-2 py-1 text-sm font-ui whitespace-pre-wrap break-words text-right" style={{ borderColor: 'var(--border-default)', color: 'var(--text-primary)' }}>
               {content}
             </div>
           </div>
         ) : (
-          <div className="border border-zinc-800 bg-zinc-950 py-3 px-4 rounded-none">
+          <div className="border py-3 px-4 rounded-ds" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}>
             <div className={isStreaming ? 'stream-mask' : ''}>
               <AcademicMarkdown
                 content={content || ''}

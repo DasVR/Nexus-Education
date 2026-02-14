@@ -73,7 +73,7 @@ export function TutorView() {
   return (
     <div className="flex flex-col h-full">
       {streamError && (
-        <div className="mx-4 mt-2 px-4 py-2 border border-amber-500/20 bg-amber-500/10 text-amber-400 text-sm font-mono flex items-center justify-between">
+        <div className="mx-4 mt-2 px-4 py-2 border rounded-ds text-sm font-ui flex items-center justify-between" style={{ borderColor: 'var(--error)', background: 'var(--error-bg)', color: 'var(--error)' }}>
           {streamError}
           <button type="button" onClick={() => setError(null)} className="underline">
             Dismiss

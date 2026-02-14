@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Hexagon } from 'lucide-react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
+import { expand } from '../../utils/motionVariants'
 
 type ThinkingBlockProps = {
   reasoning?: string
@@ -12,30 +13,60 @@ export function ThinkingBlock({ reasoning, isStreaming }: ThinkingBlockProps) {
   const hasContent = !!reasoning?.trim()
 
   return (
-    <div className="border border-zinc-800 font-mono text-xs rounded-none">
+    <div
+      className="border font-mono text-xs rounded overflow-hidden accordion"
+      style={{ borderColor: 'var(--border-default)' }}
+    >
       <button
         type="button"
         onClick={() => setExpanded((e) => !e)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-left text-zinc-500 hover:text-zinc-400 hover:bg-zinc-900/50 transition-colors rounded-none"
+        className="w-full flex items-center gap-2 px-3 py-2 text-left rounded-none duration-fast transition-colors"
+        style={{
+          color: 'var(--text-secondary)',
+          background: 'transparent',
+        }}
+        aria-expanded={expanded}
+        aria-controls="reasoning-content"
+        aria-label={expanded ? 'Hide reasoning process' : 'Show reasoning process'}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'var(--hover-bg)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent'
+        }}
       >
+        <span className="shrink-0 w-4 flex items-center justify-center">
+          {expanded ? (
+            <ChevronDown className="w-3.5 h-3.5" style={{ color: 'var(--accent-primary)' }} />
+          ) : (
+            <ChevronRight className="w-3.5 h-3.5" style={{ color: 'var(--accent-primary)' }} />
+          )}
+        </span>
+        <span>REASONING PROCESS</span>
         {(isStreaming || hasContent) && (
-          <Hexagon
-            className="w-3.5 h-3.5 shrink-0 text-emerald-500 animate-pulse"
-            strokeWidth={2}
+          <motion.span
+            className="w-1.5 h-1.5 rounded-full shrink-0 ml-1"
+            style={{ background: 'var(--accent-primary)' }}
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
         )}
-        <span>&gt; ANALYZING QUERY....</span>
       </button>
       <AnimatePresence initial={false}>
         {expanded && (hasContent || isStreaming) && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 40 }}
-            className="overflow-hidden border-t border-zinc-800 bg-zinc-900/50 rounded-none"
+            id="reasoning-content"
+            {...expand}
+            className="overflow-hidden border-t"
+            style={{
+              borderColor: 'var(--border-subtle)',
+              background: 'var(--bg-elevated)',
+            }}
           >
-            <pre className="p-3 text-zinc-500 whitespace-pre-wrap break-words font-mono text-xs">
+            <pre
+              className="p-3 whitespace-pre-wrap break-words font-mono text-xs"
+              style={{ color: 'var(--text-tertiary)' }}
+            >
               {reasoning || (isStreaming ? 'Waiting for reasoning...' : '')}
             </pre>
           </motion.div>

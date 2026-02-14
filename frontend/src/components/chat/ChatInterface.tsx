@@ -99,8 +99,8 @@ export function ChatInterface() {
   return (
     <div className="flex flex-col h-full max-w-4xl mx-auto">
       {/* Mode toggle */}
-      <div className="flex items-center gap-2 p-4 border-b border-white/10 shrink-0">
-        <span className="text-xs font-mono text-slate-500 uppercase tracking-wider">
+      <div className="flex items-center gap-2 p-4 border-b shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
+        <span className="text-xs font-ui uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
           Mode
         </span>
         {(['tutor', 'research', 'writing'] as const).map((m) => (
@@ -108,11 +108,20 @@ export function ChatInterface() {
             key={m}
             type="button"
             onClick={() => setMode(m)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
-              mode === m
-                ? 'bg-emerald-500/20 text-emerald-400'
-                : 'text-slate-400 hover:text-slate-300 hover:bg-white/5'
+            className={`px-3 py-1.5 rounded-ds text-sm font-ui font-medium duration-fast transition-colors capitalize ${
+              mode === m ? 'active' : ''
             }`}
+            style={
+              mode === m
+                ? { background: 'var(--hover-bg)', color: 'var(--accent-primary)' }
+                : { color: 'var(--text-secondary)' }
+            }
+            onMouseEnter={(e) => {
+              if (mode !== m) e.currentTarget.style.background = 'var(--bg-elevated)'
+            }}
+            onMouseLeave={(e) => {
+              if (mode !== m) e.currentTarget.style.background = 'transparent'
+            }}
           >
             {m}
           </button>
@@ -120,13 +129,9 @@ export function ChatInterface() {
       </div>
 
       {streamError && (
-        <div className="mx-4 mt-2 px-4 py-2 border border-amber-500/20 bg-amber-500/10 text-amber-400 text-sm font-mono flex items-center justify-between">
+        <div className="mx-4 mt-2 px-4 py-2 border rounded-ds text-sm font-ui flex items-center justify-between" style={{ borderColor: 'var(--error)', background: 'var(--error-bg)', color: 'var(--error)' }}>
           {streamError}
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="underline"
-          >
+          <button type="button" onClick={() => setError(null)} className="underline">
             Dismiss
           </button>
         </div>
